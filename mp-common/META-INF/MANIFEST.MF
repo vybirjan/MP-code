@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Common Classes
+Bundle-SymbolicName: cz.cvut.fit.vybirjan.mp.common
+Bundle-Version: 1.0.0
+Export-Package: cz.cvut.fit.vybirjan.mp.common,
+ cz.cvut.fit.vybirjan.mp.common.comm,
+ cz.cvut.fit.vybirjan.mp.common.crypto
