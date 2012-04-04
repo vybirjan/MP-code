@@ -49,12 +49,17 @@ public class Utils {
 	 * -types-as-byte-arrays
 	 */
 	public static int toInt(byte[] data, int offset) {
-		if (data == null || data.length != 4)
-			return 0x0;
-
 		return ((0xff & data[offset]) << 24 |
 				(0xff & data[offset + 1]) << 16 |
 				(0xff & data[offset + 2]) << 8 | (0xff & data[offset + 3]) << 0);
+	}
+
+	public static final byte[] toByteArray(int value) {
+		return new byte[] {
+				(byte) (value >>> 24),
+				(byte) (value >>> 16),
+				(byte) (value >>> 8),
+				(byte) value };
 	}
 
 }

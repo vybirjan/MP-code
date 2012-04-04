@@ -21,9 +21,11 @@ import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 @SuppressWarnings("restriction")
 public class SecurityHook extends BaseClassLoadingHook implements HookConfigurator {
 
-	private static final byte HEAD = (byte) 0xEC;
-
 	private static Map<Integer, ProcessStrategy<Object>> keys = new HashMap<Integer, ProcessStrategy<Object>>();
+
+	private static class InstanceHolder {
+		static final SecurityHook INSTANCE = new SecurityHook();
+	}
 
 	public static void addKey(TaggedKey key) {
 		synchronized (keys) {
@@ -38,13 +40,13 @@ public class SecurityHook extends BaseClassLoadingHook implements HookConfigurat
 	}
 
 	@Override
-	public void addHooks(HookRegistry arg0) {
-
+	public void addHooks(HookRegistry registry) {
+		registry.addClassLoadingHook(InstanceHolder.INSTANCE);
 	}
 
 	@Override
 	public byte[] processClass(String name, byte[] classbytes, ClasspathEntry classpathEntry, BundleEntry entry, ClasspathManager manager) {
-		if (classbytes[0] == HEAD) {
+		if (classbytes[0] == FileEncryptor.HEAD) {
 			Integer tag = Integer.valueOf(Utils.toInt(classbytes, 1));
 			ProcessStrategy<Object> strategy = keys.get(tag);
 			if (strategy != null) {

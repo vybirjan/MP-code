@@ -18,11 +18,15 @@ import java.util.zip.ZipOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 
+import cz.cvut.fit.vybirjan.mp.common.Utils;
+
 public final class FileEncryptor {
 
 	public static final String CLASS_SUFFIX = ".class";
 	public static final String DEFAULT_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
 	public static final int DEFAULT_IV_SIZE = 16;
+
+	public static final byte HEAD = (byte) 0xEC;
 
 	private static final int BUFFER_SIZE = 1024;
 
@@ -45,6 +49,24 @@ public final class FileEncryptor {
 			return new InitVectorDecryptStrategy(Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM), key, DEFAULT_IV_SIZE);
 		} catch (GeneralSecurityException e) {
 			throw new AssertionError(e);
+		}
+	}
+
+	public static final class TaggindEncryptionStrategy<T> implements ProcessStrategy<T> {
+
+		public TaggindEncryptionStrategy(int tag, ProcessStrategy<T> next) {
+			this.tag = tag;
+			this.next = next;
+		}
+
+		private final int tag;
+		private final ProcessStrategy<T> next;
+
+		@Override
+		public void process(T element, InputStream source, OutputStream target) throws IOException {
+			target.write(HEAD);
+			target.write(Utils.toByteArray(tag));
+			next.process(element, source, target);
 		}
 	}
 
@@ -172,6 +194,10 @@ public final class FileEncryptor {
 			out.close();
 
 		}
+	}
+
+	public static void encryptJarFile(JarFile source, File target, Key key, int tag) throws IOException {
+		processJarFile(source, target, new JarEntryClassProcessingStrategy(new TaggindEncryptionStrategy(tag, createDefaultEncryptStrategy(key))));
 	}
 
 	public static void encryptJarFile(JarFile source, File target, Key key) throws IOException {
