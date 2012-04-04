@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,10 +20,8 @@ public final class LicenseInformation implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Date validFrom;
-	private Date validTo;
 	private String licenseNumber;
-	private Set<String> features;
+	private Set<Feature> features;
 	private Set<HardwareFingerprint> fingerPrints;
 	private List<TaggedKey> keys;
 
@@ -39,10 +36,6 @@ public final class LicenseInformation implements Serializable {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		DataOutputStream dataOut = new DataOutputStream(out);
 		try {
-			write(dataOut, validFrom);
-			dataOut.writeChar(',');
-			write(dataOut, validTo);
-			dataOut.writeChar(',');
 			dataOut.write(Utils.toUtf8(licenseNumber));
 			dataOut.writeChar(',');
 			if (fingerPrints == null) {
@@ -61,15 +54,7 @@ public final class LicenseInformation implements Serializable {
 		return out.toByteArray();
 	}
 
-	private static void write(DataOutputStream out, Date d) throws IOException {
-		if (d == null) {
-			out.writeByte(0x0);
-		} else {
-			out.writeLong(d.getTime());
-		}
-	}
-
-	private static void write(DataOutputStream out, Set<String> keys) throws IOException {
+	private static void write(DataOutputStream out, Set<Feature> keys) throws IOException {
 		if (keys == null) {
 			out.writeByte(0x0);
 			return;
@@ -78,29 +63,29 @@ public final class LicenseInformation implements Serializable {
 			return;
 		}
 
-		String[] keysOrdered = new String[keys.size()];
+		Feature[] keysOrdered = new Feature[keys.size()];
 		keys.toArray(keysOrdered);
-		Arrays.sort(keysOrdered);
+		Arrays.sort(keysOrdered, Feature.CODE_COMPARATOR);
 
 		out.writeChar('<');
-		out.write(Utils.toUtf8(keysOrdered[0]));
+		out.write(Utils.toUtf8(keysOrdered[0].toString()));
 		for (int i = 1; i < keysOrdered.length; i++) {
 			out.writeChar(',');
-			out.write(Utils.toUtf8(keysOrdered[0]));
+			out.write(Utils.toUtf8(keysOrdered[0].toString()));
 		}
 
 		out.writeChar('>');
 	}
 
-	public void addFeature(String feature) {
+	public void addFeature(Feature feature) {
 		if (features == null) {
-			features = new HashSet<String>();
+			features = new HashSet<Feature>();
 		}
 
 		features.add(feature);
 	}
 
-	public void removeFeature(String feature) {
+	public void removeFeature(Feature feature) {
 		if (features != null) {
 			features.remove(feature);
 		}
@@ -128,7 +113,7 @@ public final class LicenseInformation implements Serializable {
 		}
 	}
 
-	public Set<String> getFeatures() {
+	public Set<Feature> getFeatures() {
 		if (features == null) {
 			return Collections.emptySet();
 		} else {
@@ -156,22 +141,6 @@ public final class LicenseInformation implements Serializable {
 		} else {
 			return Collections.unmodifiableList(keys);
 		}
-	}
-
-	public Date getValidFrom() {
-		return validFrom;
-	}
-
-	public void setValidFrom(Date validFrom) {
-		this.validFrom = validFrom;
-	}
-
-	public Date getValidTo() {
-		return validTo;
-	}
-
-	public void setValidTo(Date validTo) {
-		this.validTo = validTo;
 	}
 
 	public String getLicenseNumber() {

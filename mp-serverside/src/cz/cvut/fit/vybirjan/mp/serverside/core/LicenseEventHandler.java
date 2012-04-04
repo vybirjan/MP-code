@@ -5,6 +5,8 @@ import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
 
 public interface LicenseEventHandler {
 
-	LicenseResponse handleRequest(LicenseRequest request, LicenseEventHandler nextInChain);
+	LicenseResponse handleActivateLicense(LicenseRequest request, RequestProcessingContext context);
+
+	LicenseResponse handleGetExistingLicense(LicenseRequest request, RequestProcessingContext context);
 
 }

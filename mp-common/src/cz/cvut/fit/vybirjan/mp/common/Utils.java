@@ -3,6 +3,7 @@ package cz.cvut.fit.vybirjan.mp.common;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -62,4 +63,37 @@ public class Utils {
 				(byte) value };
 	}
 
+	public static Date min(Date first, Date second) {
+		if (first == null) {
+			return second;
+		} else if (second == null) {
+			return first;
+		} else {
+			return first.getTime() > second.getTime() ? second : first;
+		}
+	}
+
+	public static Date max(Date first, Date second) {
+		if (first == null) {
+			return second;
+		} else if (second == null) {
+			return first;
+		} else {
+			return first.getTime() > second.getTime() ? first : second;
+		}
+	}
+
+	public static boolean isValid(Date validityStart, Date validityEnd) {
+		Date now = new Date();
+
+		if (validityStart != null && validityStart.after(now)) {
+			return false;
+		}
+
+		if (validityEnd != null && validityEnd.before(now)) {
+			return false;
+		}
+
+		return true;
+	}
 }

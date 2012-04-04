@@ -5,6 +5,8 @@ import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
 
 public interface LicenseManager {
 
-	LicenseResponse requestLicense(LicenseRequest response);
+	LicenseResponse activateLicense(LicenseRequest request);
+
+	LicenseResponse getLicense(LicenseRequest request);
 
 }
