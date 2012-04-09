@@ -6,17 +6,6 @@ public class LicenseResponse implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum ResponseType {
-		OK_EXISTING_VERIFIED,
-		OK_NEW_CREATED,
-		ERROR_NEW_ACTIVATIONS_NOT_ALLOWED,
-		ERROR_INACTIVE,
-		ERROR_INTERNAL_ERROR,
-		ERROR_TOO_MANY_ACTIVATIONS,
-		ERROR_LICENSE_NOT_FOUND,
-		ERROR_EXPIRED
-	}
-
 	private final ResponseType type;
 	private final LicenseInformation licenseInformation;
 
@@ -59,5 +48,9 @@ public class LicenseResponse implements Serializable {
 
 	public static LicenseResponse newActivationsNotAllowed() {
 		return new LicenseResponse(ResponseType.ERROR_NEW_ACTIVATIONS_NOT_ALLOWED, null);
+	}
+
+	public boolean isOk() {
+		return (type == ResponseType.OK_EXISTING_VERIFIED || type == ResponseType.OK_NEW_CREATED) && licenseInformation != null;
 	}
 }
