@@ -55,10 +55,6 @@ public class WindowsFingerprintProvider {
 			disposeServiceHandles(handles);
 			handles = null;
 		}
-		if (initialized.get()) {
-			uninitialize();
-			initialized.set(Boolean.FALSE);
-		}
 	}
 
 	private String queryWMI(String clazz, String property) throws PropertyReadException {

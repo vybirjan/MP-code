@@ -19,29 +19,15 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 	public static final String VALUE_SPLIT = ":";
 	public static final String ENTRY_SPLIT = ";";
 
-	private String name;
-	private String value;
+	private final String name;
+	private final String value;
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
-		if (name == null) {
-			throw new IllegalArgumentException("Argument must not be null");
-		}
-		this.name = name;
-	}
-
 	public String getValue() {
 		return value;
-	}
-
-	public void setValue(String value) {
-		if (value == null) {
-			throw new IllegalArgumentException("Argument must not be null");
-		}
-		this.value = value;
 	}
 
 	@Override

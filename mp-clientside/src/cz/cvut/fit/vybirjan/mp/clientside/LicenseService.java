@@ -44,9 +44,9 @@ public class LicenseService {
 	private final LicenseServiceClient serviceClient;
 	private final HardwareFingerprintProvider fingerprintProvider;
 
-	public LicenseInformation getCurrent() {
+	private LicenseInformation getCurrentInternal() {
 		LicenseInformation tmpLicense = null;
-		synchronized (currentLicense) {
+		synchronized (licenseLock) {
 			tmpLicense = currentLicense;
 		}
 
@@ -63,6 +63,11 @@ public class LicenseService {
 		}
 
 		return currentLicense;
+	}
+
+	public LicenseInformation getCurrent() {
+		LicenseInformation info = getCurrentInternal();
+		return info == null ? null : (LicenseInformation) info.clone();
 	}
 
 	private void setCurrentLicense(LicenseInformation info) {
@@ -102,18 +107,18 @@ public class LicenseService {
 		}
 	}
 
-	public void checkOffline() throws LicenseCheckException {
+	public LicenseInformation checkOffline() throws LicenseCheckException {
 		try {
-			checkLicense(getCurrent());
+			return (LicenseInformation) checkLicense(getCurrentInternal()).clone();
 		} catch (LicenseCheckException e) {
 			clearCurrentLicense();
 			throw e;
 		}
 	}
 
-	public void checkOnline() throws LicenseCheckException, LicenseRetrieveException, IOException {
+	public LicenseInformation checkOnline() throws LicenseCheckException, LicenseRetrieveException, IOException {
 		try {
-			LicenseInformation info = getCurrent();
+			LicenseInformation info = getCurrentInternal();
 			if (info == null) {
 				throw new LicenseCheckException(LicenseCheckErrorType.NOT_FOUND);
 			}
@@ -123,6 +128,7 @@ public class LicenseService {
 				info = response.getLicenseInformation();
 				checkLicense(info);
 				setCurrentLicense(info);
+				return (LicenseInformation) info.clone();
 			} else {
 				clearCurrentLicense();
 				throw new LicenseRetrieveException(response.getType());
@@ -134,7 +140,7 @@ public class LicenseService {
 		}
 	}
 
-	private void checkLicense(LicenseInformation license) throws LicenseCheckException {
+	private LicenseInformation checkLicense(LicenseInformation license) throws LicenseCheckException {
 		if (!license.isSigned() || !license.verify(getKey())) {
 			throw new LicenseCheckException(LicenseCheckErrorType.INVALID);
 		}
@@ -152,6 +158,7 @@ public class LicenseService {
 			throw new LicenseCheckException(LicenseCheckErrorType.EXPIRED);
 		}
 
+		return license;
 	}
 
 	private Key getKey() {

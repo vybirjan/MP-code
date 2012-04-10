@@ -16,7 +16,7 @@ public class LicenseCheckException extends Exception {
 
 	private final LicenseCheckErrorType error;
 
-	public LicenseCheckErrorType getError() {
+	public LicenseCheckErrorType getErrorType() {
 		return error;
 	}
 

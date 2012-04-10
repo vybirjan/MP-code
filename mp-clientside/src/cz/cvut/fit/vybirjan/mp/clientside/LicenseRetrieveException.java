@@ -7,8 +7,12 @@ public class LicenseRetrieveException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	public LicenseRetrieveException(ResponseType type) {
-		this.response = type;
+		this.responseType = type;
 	}
 
-	private final ResponseType response;
+	private final ResponseType responseType;
+
+	public ResponseType getResponseType() {
+		return responseType;
+	}
 }

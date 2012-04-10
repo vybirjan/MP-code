@@ -36,11 +36,7 @@ public class EquinoxSecureStorage implements SecureStorage {
 
 		try {
 			byte[] data = preferences.getByteArray(OBJECT_NAME, null);
-			if (data == null) {
-				return null;
-			} else {
-				return deserialize(data);
-			}
+			return deserialize(data);
 		} catch (StorageException e) {
 			throw new IOException("Failed to load license info", e);
 		}

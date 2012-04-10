@@ -1,5 +1,6 @@
 package cz.cvut.fit.vybirjan.mp.serverside.impl;
 
+import java.security.Key;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -15,6 +16,7 @@ import cz.cvut.fit.vybirjan.mp.serverside.core.DataSource;
 import cz.cvut.fit.vybirjan.mp.serverside.core.LicenseEventHandler;
 import cz.cvut.fit.vybirjan.mp.serverside.core.LicenseManager;
 import cz.cvut.fit.vybirjan.mp.serverside.core.RequestProcessingContext;
+import cz.cvut.fit.vybirjan.mp.serverside.core.ResponseKeyProvider;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Activation;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.EntityFactory;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Feature;
@@ -23,12 +25,18 @@ import cz.cvut.fit.vybirjan.mp.serverside.domain.License;
 public class LicenseManagerImpl implements LicenseManager {
 
 	public LicenseManagerImpl(DataSource dataSource, EntityFactory entityFactory) {
+		this(dataSource, entityFactory, null);
+	}
+
+	public LicenseManagerImpl(DataSource dataSource, EntityFactory entityFactory, ResponseKeyProvider keyProvider) {
 		this.dataSource = dataSource;
 		this.entityFactory = entityFactory;
+		this.keyProvider = keyProvider;
 	}
 
 	protected final DataSource dataSource;
 	protected final EntityFactory entityFactory;
+	protected final ResponseKeyProvider keyProvider;
 
 	protected List<LicenseEventHandler> eventHandlers = Collections.synchronizedList(new LinkedList<LicenseEventHandler>());
 
@@ -36,9 +44,22 @@ public class LicenseManagerImpl implements LicenseManager {
 	public LicenseResponse activateLicense(LicenseRequest request) {
 		try {
 			RequestProcessingContenxtImpl processingContext = new RequestProcessingContenxtImpl(eventHandlers.iterator(), BASE_HANDLER);
-			return processingContext.processActivateLicense(request);
+			LicenseResponse response = processingContext.processActivateLicense(request);
+
+			signResponse(request, response);
+
+			return response;
 		} catch (RuntimeException e) {
 			return LicenseResponse.internalError();
+		}
+	}
+
+	protected void signResponse(LicenseRequest request, LicenseResponse response) {
+		if (response.getLicenseInformation() != null && keyProvider != null) {
+			Key k = keyProvider.getResponseEncryptionKey(request);
+			if (k != null) {
+				response.getLicenseInformation().sign(k);
+			}
 		}
 	}
 
@@ -134,7 +155,11 @@ public class LicenseManagerImpl implements LicenseManager {
 	public LicenseResponse getLicense(LicenseRequest request) {
 		try {
 			RequestProcessingContenxtImpl processingContext = new RequestProcessingContenxtImpl(eventHandlers.iterator(), BASE_HANDLER);
-			return processingContext.processGetExistingLicense(request);
+			LicenseResponse response = processingContext.processGetExistingLicense(request);
+
+			signResponse(request, response);
+
+			return response;
 		} catch (RuntimeException e) {
 			return LicenseResponse.internalError();
 		}

@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,7 +17,7 @@ import cz.cvut.fit.vybirjan.mp.common.Utils;
 import cz.cvut.fit.vybirjan.mp.common.crypto.Signing;
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 
-public final class LicenseInformation implements Serializable {
+public final class LicenseInformation implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -161,5 +162,21 @@ public final class LicenseInformation implements Serializable {
 		}
 		Signing s = new Signing(publicKey);
 		return s.verify(getFingerprint(), Utils.decode(signature));
+	}
+
+	@Override
+	public Object clone() {
+		LicenseInformation clone = null;
+		try {
+			clone = (LicenseInformation) super.clone();
+		} catch (CloneNotSupportedException e) {
+			// never happens
+			throw new AssertionError("LicenseInformation superclass does not support cloning");
+		}
+		clone.features = features == null ? null : new HashSet<Feature>(features);
+		clone.fingerPrints = fingerPrints == null ? null : new HashSet<HardwareFingerprint>(fingerPrints);
+		clone.keys = keys == null ? null : new ArrayList<TaggedKey>(keys);
+
+		return clone;
 	}
 }
