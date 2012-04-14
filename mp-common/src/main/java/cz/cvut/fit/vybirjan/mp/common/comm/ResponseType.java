@@ -1,5 +1,8 @@
 package cz.cvut.fit.vybirjan.mp.common.comm;
 
+import javax.xml.bind.annotation.XmlEnum;
+
+@XmlEnum
 public enum ResponseType {
 	OK_EXISTING_VERIFIED,
 	OK_NEW_CREATED,
@@ -8,5 +11,7 @@ public enum ResponseType {
 	ERROR_INTERNAL_ERROR,
 	ERROR_TOO_MANY_ACTIVATIONS,
 	ERROR_LICENSE_NOT_FOUND,
-	ERROR_EXPIRED
+	ERROR_EXPIRED,
+	ERROR_BAD_REQUEST,
+	ERROR_COMMUNICATION_ERROR
 }

@@ -10,6 +10,8 @@ import javax.xml.bind.DatatypeConverter;
 public class Utils {
 
 	public static final String HASH_ALGORITHM = "SHA1";
+	public static final String MIME_WILDCARD = "*";
+	public static final String UTF_8 = "UTF-8";
 
 	public static MessageDigest getDigest() {
 		try {
@@ -38,7 +40,15 @@ public class Utils {
 
 	public static byte[] toUtf8(String str) {
 		try {
-			return str.getBytes("UTF-8");
+			return str.getBytes(UTF_8);
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError("UTF-8 encoding not supported");
+		}
+	}
+
+	public static String fromUtf8(byte[] data, int offset, int length) {
+		try {
+			return new String(data, offset, length, UTF_8);
 		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError("UTF-8 encoding not supported");
 		}

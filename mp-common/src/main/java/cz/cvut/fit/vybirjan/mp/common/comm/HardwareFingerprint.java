@@ -7,9 +7,17 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name = "hardwareFingerprint")
 public class HardwareFingerprint implements Serializable, Comparable<HardwareFingerprint> {
 
 	private static final long serialVersionUID = 1L;
+
+	private HardwareFingerprint() {
+
+	}
 
 	public HardwareFingerprint(String name, String value) {
 		this.name = name;
@@ -19,8 +27,10 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 	public static final String VALUE_SPLIT = ":";
 	public static final String ENTRY_SPLIT = ";";
 
-	private final String name;
-	private final String value;
+	@XmlAttribute
+	private String name;
+	@XmlAttribute
+	private String value;
 
 	public String getName() {
 		return name;

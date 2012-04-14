@@ -1,8 +1,14 @@
 package cz.cvut.fit.vybirjan.mp.clientside;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
+import org.eclipse.swt.widgets.Display;
 
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseCheckException.LicenseCheckErrorType;
+import cz.cvut.fit.vybirjan.mp.common.RunnableWithResult;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseInformation;
 import cz.cvut.fit.vybirjan.mp.common.comm.ResponseType;
 
@@ -33,6 +39,8 @@ public class LicenseHelper {
 		void onRetrieveException(ResponseType response);
 
 		void onCheckException(LicenseCheckErrorType type);
+
+		void destroy();
 	}
 
 	public static LicenseInformation getValidLicense(LicenseNumberProvider numberProvider) {
@@ -55,8 +63,33 @@ public class LicenseHelper {
 				numberProvider.onCheckException(e1.getErrorType());
 				return loop(numberProvider);
 			}
+		} finally {
+			numberProvider.destroy();
+		}
+	}
+
+	public static LicenseInformation getValidLicenseFromUI(final LicenseNumberProvider p, Executor e) {
+		if (!isUiThread()) {
+			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
 		}
 
+		RunnableWithResult<LicenseInformation> rwr = new RunnableWithResult<LicenseInformation>() {
+
+			@Override
+			protected LicenseInformation runWithResult() {
+				return getValidLicense(p);
+			}
+		};
+
+		e.execute(rwr);
+
+		while (!rwr.isFinished()) {
+			if (!Display.getCurrent().readAndDispatch()) {
+				Display.getCurrent().sleep();
+			}
+		}
+
+		return rwr.getResult();
 	}
 
 	private static LicenseInformation loop(LicenseNumberProvider provider) {
@@ -75,6 +108,10 @@ public class LicenseHelper {
 		}
 
 		return null;
+	}
+
+	private static boolean isUiThread() {
+		return Thread.currentThread() == Display.getDefault().getThread();
 	}
 
 }

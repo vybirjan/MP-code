@@ -28,7 +28,7 @@ public class LicenseService {
 	}
 
 	private static LicenseService createInstance() {
-		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("test", false), HardwareFingerprintProviderFactory.getProvider());
+		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("localhost:8888", false), HardwareFingerprintProviderFactory.getProvider());
 	}
 
 	public LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {

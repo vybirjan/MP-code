@@ -2,12 +2,23 @@ package cz.cvut.fit.vybirjan.mp.common.comm;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+@XmlRootElement(name = "response")
 public class LicenseResponse implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final ResponseType type;
-	private final LicenseInformation licenseInformation;
+	@XmlAttribute(name = "type")
+	private ResponseType type;
+	@XmlElement(name = "licenseInfo")
+	private LicenseInformation licenseInformation;
+
+	private LicenseResponse() {
+
+	}
 
 	private LicenseResponse(ResponseType type, LicenseInformation licenseInfo) {
 		this.type = type;
@@ -48,6 +59,10 @@ public class LicenseResponse implements Serializable {
 
 	public static LicenseResponse newActivationsNotAllowed() {
 		return new LicenseResponse(ResponseType.ERROR_NEW_ACTIVATIONS_NOT_ALLOWED, null);
+	}
+
+	public static LicenseResponse communicationError() {
+		return new LicenseResponse(ResponseType.ERROR_COMMUNICATION_ERROR, null);
 	}
 
 	public boolean isOk() {

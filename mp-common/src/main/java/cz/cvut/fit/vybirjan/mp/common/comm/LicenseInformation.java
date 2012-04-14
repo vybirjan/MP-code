@@ -13,19 +13,42 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 import cz.cvut.fit.vybirjan.mp.common.Utils;
+import cz.cvut.fit.vybirjan.mp.common.comm.xml.FeatureAdapter;
+import cz.cvut.fit.vybirjan.mp.common.comm.xml.TaggedKeyAdapter;
 import cz.cvut.fit.vybirjan.mp.common.crypto.Signing;
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 
+@XmlRootElement(name = "licenseInformation")
 public final class LicenseInformation implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1L;
 
 	private String licenseNumber;
+
+	@XmlJavaTypeAdapter(FeatureAdapter.class)
+	@XmlElement(name = "feature")
+	@XmlElementWrapper(name = "features")
 	private Set<Feature> features;
+
+	@XmlElement(name = "fingerprint")
+	@XmlElementWrapper(name = "fingerprints")
 	private Set<HardwareFingerprint> fingerPrints;
+
+	@XmlJavaTypeAdapter(TaggedKeyAdapter.class)
+	@XmlElement(name = "keys")
+	@XmlElementWrapper(name = "key")
 	private List<TaggedKey> keys;
 
+	@XmlElement(name = "signature")
 	private String signature;
 
 	public void sign(Key privateKey) {
@@ -178,5 +201,40 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		clone.keys = keys == null ? null : new ArrayList<TaggedKey>(keys);
 
 		return clone;
+	}
+
+	public static void main(String[] args) throws JAXBException {
+		// KeyPair keys = Signing.generateKeyPair();
+
+		JAXBContext context = JAXBContext.newInstance(LicenseRequest.class, LicenseResponse.class, LicenseInformation.class);
+		Marshaller marsh = context.createMarshaller();
+
+		LicenseRequest request = new LicenseRequest("AAAA-0112");
+		request.addFingerprint(new HardwareFingerprint("XXX", "fooo"));
+		marsh.marshal(request, System.out);
+
+		// LicenseInformation info = new LicenseInformation();
+		// info.setLicenseNumber("sdafasdf-dddd-ddd");
+		// info.addFeature(new Feature("asssss", null, new Date()));
+		// info.addFeature(new Feature("another feature", new Date(), new
+		// Date()));
+		// info.addFingerPrint(new HardwareFingerprint("W01",
+		// "dfgsdfgaerQWERf="));
+		// info.addKey(new TaggedKeyImpl(55, new SecretKeySpec(new byte[] { 1 },
+		// "foo")));
+		// info.sign(keys.getPrivate());
+		//
+		// LicenseResponse resp = LicenseResponse.createdNew(info);
+		//
+		// ByteArrayOutputStream out = new ByteArrayOutputStream();
+		// marsh.marshal(resp, System.out);
+		// ByteArrayInputStream in = new
+		// ByteArrayInputStream(out.toByteArray());
+		//
+		// Unmarshaller unmarsh = context.createUnmarshaller();
+		// LicenseResponse response = (LicenseResponse) unmarsh.unmarshal(in);
+		//
+		// System.out.println(response.getLicenseInformation().verify(keys.getPublic()));
+
 	}
 }

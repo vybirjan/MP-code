@@ -18,8 +18,8 @@ public class Feature implements Serializable {
 
 	public Feature(String code, Date validFrom, Date validTo) {
 		this.code = code;
-		this.validFrom = (Date) validFrom.clone();
-		this.validTo = (Date) validTo.clone();
+		this.validFrom = validFrom == null ? null : (Date) validFrom.clone();
+		this.validTo = validTo == null ? null : (Date) validTo.clone();
 	}
 
 	private final String code;
@@ -31,11 +31,11 @@ public class Feature implements Serializable {
 	}
 
 	public Date getValidFrom() {
-		return (Date) validFrom.clone();
+		return validFrom == null ? null : (Date) validFrom.clone();
 	}
 
 	public Date getValidTo() {
-		return (Date) validTo.clone();
+		return validTo == null ? null : (Date) validTo.clone();
 	}
 
 	@Override

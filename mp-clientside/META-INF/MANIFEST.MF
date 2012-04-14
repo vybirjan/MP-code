@@ -6,8 +6,12 @@ Bundle-Version: 1.0.0
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.osgi,
  cz.cvut.fit.vybirjan.mp.common;bundle-version="1.0.0";visibility:=reexport,
- org.eclipse.equinox.security;bundle-version="1.1.1"
-Export-Package: cz.cvut.fit.vybirjan.mp.clientside
+ org.eclipse.equinox.security;bundle-version="1.1.1",
+ org.eclipse.swt;bundle-version="3.5.0";resolution:=optional;visibility:=reexport,
+ org.eclipse.jface;bundle-version="3.5.0";resolution:=optional;visibility:=reexport
+Export-Package: cz.cvut.fit.vybirjan.mp.clientside,
+ cz.cvut.fit.vybirjan.mp.clientside.ui
 Bundle-NativeCode: lib/x86/fplib.dll;processor=x86, 
  lib/x64/fplib.dll;processor=x86_64
 Bundle-Activator: cz.cvut.fit.vybirjan.mp.clientside.internal.Activator
+Import-Package: org.eclipse.ui.internal;resolution:=optional
