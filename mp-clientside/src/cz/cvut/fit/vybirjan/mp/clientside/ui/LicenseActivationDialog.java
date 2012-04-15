@@ -30,14 +30,16 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		super(parentShell);
 		setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.RESIZE);
 		setBlockOnOpen(false);
+		setHelpAvailable(false);
 	}
 
 	protected Composite content;
-	protected Text txtText;
 	protected Text txtLicenseNumber;
 	protected Composite licenseInputWrapper;
 	protected Composite progressWrapper;
 	protected StackLayout stackLayout;
+
+	protected String shellTitle = ""; //$NON-NLS-1$
 
 	protected boolean releaseGetNameLoop = false;
 
@@ -45,6 +47,7 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 	public void create() {
 		super.create();
 		getShell().addShellListener(SHELL_CLOSE_LISTENER);
+		getShell().setText(shellTitle);
 	}
 
 	@Override
@@ -53,11 +56,6 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.FILL).applyTo(content);
 		GridLayoutFactory.swtDefaults().applyTo(content);
 		{
-			txtText = new Text(content, SWT.READ_ONLY);
-			txtText.setBackground(content.getBackground());
-			GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, false).applyTo(txtText);
-			txtText.setText("insert you license number");
-
 			Composite wrapper = new Composite(content, SWT.NONE);
 			GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.FILL).applyTo(wrapper);
 			stackLayout = new StackLayout();
@@ -67,18 +65,21 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 				GridLayoutFactory.swtDefaults().numColumns(2).applyTo(licenseInputWrapper);
 				{
 					Label lbl = new Label(licenseInputWrapper, SWT.NONE);
-					lbl.setText("license number");
-					GridDataFactory.swtDefaults().grab(false, true).align(SWT.BEGINNING, SWT.FILL).applyTo(lbl);
+					lbl.setText(Messages.LicenseActivationDialog_LicenseNumber);
+					GridDataFactory.swtDefaults().grab(false, false).align(SWT.BEGINNING, SWT.CENTER).applyTo(lbl);
 
 					txtLicenseNumber = new Text(licenseInputWrapper, SWT.BORDER);
-					GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.TOP).applyTo(txtLicenseNumber);
+					GridDataFactory.swtDefaults().grab(true, false).align(SWT.FILL, SWT.CENTER).applyTo(txtLicenseNumber);
 				}
 
 				progressWrapper = new Composite(wrapper, SWT.NONE);
 				GridLayoutFactory.fillDefaults().applyTo(progressWrapper);
 				{
+					Label lbl = new Label(progressWrapper, SWT.NONE);
+					lbl.setText(Messages.LicenseActivationDialog_RetrieveingLicense);
+
 					ProgressBar progress = new ProgressBar(progressWrapper, SWT.INDETERMINATE);
-					GridDataFactory.swtDefaults().grab(true, true).align(SWT.FILL, SWT.CENTER).applyTo(progress);
+					GridDataFactory.swtDefaults().grab(true, false).align(SWT.FILL, SWT.FILL).applyTo(progress);
 				}
 			}
 			setTopControl(licenseInputWrapper);
@@ -161,7 +162,7 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		} else {
 			createIfNeeded();
 
-			setErrorMessage("connection failed: " + e.getMessage());
+			setErrorMessage(Messages.LicenseActivationDialog_Error_ConnectionFailed + e.getMessage());
 			// TODO
 		}
 	}
@@ -179,7 +180,7 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		} else {
 			createIfNeeded();
 			// TODO
-			setErrorMessage("retrieving license failed: " + response);
+			setErrorMessage(Messages.LicenseActivationDialog_Error_RetrieveFailed + response);
 		}
 	}
 
@@ -196,7 +197,7 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		} else {
 			createIfNeeded();
 
-			setErrorMessage("license check failed: " + type);
+			setErrorMessage(Messages.LicenseActivationDialog_Error_VerificationFailed + type);
 			// TODO
 		}
 	}
@@ -279,6 +280,13 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 			if (getShell() != null && !getShell().isDisposed()) {
 				getShell().dispose();
 			}
+		}
+	}
+
+	public void setShellTitle(String shellTitle) {
+		this.shellTitle = shellTitle;
+		if (getShell() != null && !getShell().isDisposed()) {
+			getShell().setText(shellTitle);
 		}
 	}
 

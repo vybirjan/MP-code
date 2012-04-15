@@ -1,6 +1,5 @@
 package cz.cvut.fit.vybirjan.mp.serverside.core;
 
-import java.util.Collection;
 import java.util.List;
 
 import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
@@ -10,9 +9,9 @@ import cz.cvut.fit.vybirjan.mp.serverside.domain.License;
 
 public interface DataSource {
 
-	Collection<Feature> findFeaturesForLicense(License l);
+	List<? extends Feature> findFeaturesForLicense(License l);
 
-	Collection<Activation> findActiveActivationsForLicense(License l);
+	List<? extends Activation> findActiveActivationsForLicense(License l);
 
 	Activation findActiveActivationForLicense(License l, List<HardwareFingerprint> fingerprints);
 

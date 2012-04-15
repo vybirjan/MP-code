@@ -60,4 +60,10 @@ public class Signing {
 			throw new AssertionError(KEY_ALGORITHM + " key algorithm not found");
 		}
 	}
+
+	public static void main(String[] args) {
+		KeyPair pair = generateKeyPair();
+		System.out.format("Public: %s\n", Utils.encode(Utils.serialize(pair.getPublic())));
+		System.out.format("Private: %s\n", Utils.encode(Utils.serialize(pair.getPrivate())));
+	}
 }

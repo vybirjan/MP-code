@@ -1,5 +1,6 @@
 package cz.cvut.fit.vybirjan.mp.common.crypto;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,7 +9,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -16,14 +19,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 
 public final class FileEncryptor {
 
 	public static final String CLASS_SUFFIX = ".class";
-	public static final String DEFAULT_CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
+	public static final String DEFAULT_CIPHER = "AES";
+	public static final String DEFAULT_CIPHER_ALGORITHM = DEFAULT_CIPHER + "/CBC/PKCS5Padding";
 	public static final int DEFAULT_IV_SIZE = 16;
 
 	public static final byte HEAD = (byte) 0xEC;
@@ -244,5 +250,41 @@ public final class FileEncryptor {
 			target.write(buffer, 0, read);
 		}
 
+	}
+
+	public static byte[] serializeKey(TaggedKey key) {
+		byte[] tag = Utils.toByteArray(key.getTag());
+		byte[] alg = Utils.toUtf8(key.getAlgorithm());
+		byte[] value = key.getEncoded();
+
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream(tag.length + alg.length + value.length + 4);
+			out.write(tag);
+			out.write(Utils.toByteArray(alg.length));
+			out.write(alg);
+			out.write(value);
+			return out.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to serialize key to byte array");
+		}
+	}
+
+	public static TaggedKey deserializeKey(byte[] data) {
+		int tag = Utils.toInt(data, 0);
+		int algLen = Utils.toInt(data, 4);
+		String alg = Utils.fromUtf8(data, 8, algLen);
+		int dataOffset = 4 + 4 + algLen;
+		byte[] keyData = Arrays.copyOfRange(data, dataOffset, data.length);
+
+		return new TaggedKeyImpl(tag, new SecretKeySpec(keyData, alg));
+	}
+
+	public static TaggedKey generateDefaultKey(int tag) {
+		try {
+			KeyGenerator keygen = KeyGenerator.getInstance(DEFAULT_CIPHER);
+			return new TaggedKeyImpl(tag, keygen.generateKey());
+		} catch (NoSuchAlgorithmException e) {
+			throw new AssertionError("Default cipher algorithm " + DEFAULT_CIPHER_ALGORITHM + " not available");
+		}
 	}
 }

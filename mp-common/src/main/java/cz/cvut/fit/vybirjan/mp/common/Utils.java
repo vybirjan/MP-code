@@ -1,5 +1,11 @@
 package cz.cvut.fit.vybirjan.mp.common;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -105,5 +111,32 @@ public class Utils {
 		}
 
 		return true;
+	}
+
+	public static byte[] serialize(Serializable s) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try {
+			ObjectOutputStream objOut = new ObjectOutputStream(out);
+			objOut.writeObject(s);
+			objOut.close();
+		} catch (IOException e) {
+			// should not happen on in-memory stream
+			throw new RuntimeException("Failed to serialize to inmemory stream", e);
+		}
+
+		return out.toByteArray();
+	}
+
+	public static <T> T deserialize(byte[] serialized, Class<T> result) {
+		ByteArrayInputStream in = new ByteArrayInputStream(serialized);
+		try {
+			ObjectInputStream objIn = new ObjectInputStream(in);
+			return result.cast(objIn.readObject());
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Failed to deserialize from inmemory stream", e);
+		} catch (IOException e) {
+			// should not happen on in-memory stream
+			throw new RuntimeException("Failed to deserialize from inmemory stream", e);
+		}
 	}
 }

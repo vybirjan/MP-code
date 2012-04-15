@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.osgi.baseadaptor.HookConfigurator;
@@ -23,8 +24,22 @@ public class SecurityHook extends BaseClassLoadingHook implements HookConfigurat
 
 	private static Map<Integer, ProcessStrategy<Object>> keys = new HashMap<Integer, ProcessStrategy<Object>>();
 
+	private static final TaggedKey DEFAULT_KEY = FileEncryptor.deserializeKey(Utils.decode("AAAAAAAAAANBRVPKa6fgQr2m+cnt8PwBSpxk"));
+
+	private SecurityHook() {
+		keys.put(0, FileEncryptor.createDefaultDecryptStrategy(DEFAULT_KEY));
+	}
+
 	private static class InstanceHolder {
 		static final SecurityHook INSTANCE = new SecurityHook();
+	}
+
+	public static void addKeys(Iterable<? extends TaggedKey> keys) {
+		synchronized (keys) {
+			for (TaggedKey key : keys) {
+				addKey(key);
+			}
+		}
 	}
 
 	public static void addKey(TaggedKey key) {
@@ -36,6 +51,19 @@ public class SecurityHook extends BaseClassLoadingHook implements HookConfigurat
 	public static void removeKey(TaggedKey key) {
 		synchronized (keys) {
 			keys.remove(key.getTag());
+		}
+	}
+
+	public static void clearKeys() {
+		synchronized (keys) {
+			Iterator<Integer> iterator = keys.keySet().iterator();
+
+			while (iterator.hasNext()) {
+				Integer next = iterator.next();
+				if (next != 0) { // delete all but default
+					iterator.remove();
+				}
+			}
 		}
 	}
 

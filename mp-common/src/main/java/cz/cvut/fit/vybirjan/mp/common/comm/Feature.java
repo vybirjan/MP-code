@@ -43,10 +43,10 @@ public class Feature implements Serializable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Feature[").append(code);
 		if (validFrom != null) {
-			sb.append(", validFrom=").append(validFrom);
+			sb.append(", validFrom=").append(validFrom.getTime());
 		}
 		if (validTo != null) {
-			sb.append(", validTo=").append(validTo);
+			sb.append(", validTo=").append(validTo.getTime());
 		}
 		sb.append("]");
 		return sb.toString();

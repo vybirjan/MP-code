@@ -9,6 +9,7 @@ import cz.cvut.fit.vybirjan.mp.clientside.internal.core.HardwareFingerprintProvi
 import cz.cvut.fit.vybirjan.mp.clientside.internal.core.LicenseServiceClient;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.core.SecureStorage;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.fingerprints.HardwareFingerprintProviderFactory;
+import cz.cvut.fit.vybirjan.mp.clientside.internal.hook.SecurityHook;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.storage.EquinoxSecureStorage;
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 import cz.cvut.fit.vybirjan.mp.common.comm.Feature;
@@ -28,7 +29,8 @@ public class LicenseService {
 	}
 
 	private static LicenseService createInstance() {
-		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("localhost:8888", false), HardwareFingerprintProviderFactory.getProvider());
+		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("localhost:8888/license/", false),
+				HardwareFingerprintProviderFactory.getProvider());
 	}
 
 	public LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {
@@ -60,6 +62,9 @@ public class LicenseService {
 			synchronized (licenseLock) {
 				currentLicense = tmpLicense;
 			}
+			if (currentLicense != null) {
+				SecurityHook.addKeys(currentLicense.getKeys());
+			}
 		}
 
 		return currentLicense;
@@ -80,6 +85,11 @@ public class LicenseService {
 		} catch (IOException e) {
 			// log
 		}
+
+		SecurityHook.clearKeys();
+		if (info != null) {
+			SecurityHook.addKeys(currentLicense.getKeys());
+		}
 	}
 
 	public void clearCurrentLicense() {
@@ -92,6 +102,8 @@ public class LicenseService {
 		} catch (IOException e) {
 			// damn
 		}
+
+		SecurityHook.clearKeys();
 	}
 
 	public LicenseInformation activateLicense(String licenseNumber) throws LicenseRetrieveException, LicenseCheckException, IOException {
@@ -161,8 +173,13 @@ public class LicenseService {
 		return license;
 	}
 
+	static Key k = Utils
+			.deserialize(
+					Utils.decode("rO0ABXNyABRqYXZhLnNlY3VyaXR5LktleVJlcL35T7OImqVDAgAETAAJYWxnb3JpdGhtdAASTGphdmEvbGFuZy9TdHJpbmc7WwAHZW5jb2RlZHQAAltCTAAGZm9ybWF0cQB+AAFMAAR0eXBldAAbTGphdmEvc2VjdXJpdHkvS2V5UmVwJFR5cGU7eHB0AANSU0F1cgACW0Ks8xf4BghU4AIAAHhwAAAAojCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAmNsTaNbGZtc0UAtN8q73uW2Bpn7Zfqq/IsxEyexCVj/RvMGKuKIG+ysoyYRXnNV1xga19AZxdmYycCbRzp25TxvY6waUJdg9fdkY2ChTHXWvwzQzKHKTTMTJEBV9QFJ3udBY++BXojcB+U4/RRK0wz12AsaYSqiwWa0cSULWH50CAwEAAXQABVguNTA5fnIAGWphdmEuc2VjdXJpdHkuS2V5UmVwJFR5cGUAAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcuRW51bQAAAAAAAAAAEgAAeHB0AAZQVUJMSUM="),
+					Key.class);
+
 	private Key getKey() {
-		return null; // TODO get key from somewhere
+		return k;
 	}
 
 }

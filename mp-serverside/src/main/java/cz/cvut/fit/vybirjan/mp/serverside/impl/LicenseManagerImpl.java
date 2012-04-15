@@ -50,6 +50,7 @@ public class LicenseManagerImpl implements LicenseManager {
 
 			return response;
 		} catch (RuntimeException e) {
+			e.printStackTrace();
 			return LicenseResponse.internalError();
 		}
 	}
@@ -126,7 +127,7 @@ public class LicenseManagerImpl implements LicenseManager {
 		LicenseInformation info = new LicenseInformation();
 		info.setLicenseNumber(l.getNumber());
 
-		Collection<Feature> features = dataSource.findFeaturesForLicense(l);
+		Collection<? extends Feature> features = dataSource.findFeaturesForLicense(l);
 
 		for (Feature f : features) {
 			if (Utils.isValid(f.getValidFrom(), f.getValidTo())) {
