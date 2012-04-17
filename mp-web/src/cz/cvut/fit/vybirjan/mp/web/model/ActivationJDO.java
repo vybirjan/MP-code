@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -18,15 +16,6 @@ import cz.cvut.fit.vybirjan.mp.serverside.domain.Activation;
 
 @PersistenceCapable
 public class ActivationJDO implements Activation {
-
-	public static ActivationJDO findActiveForLicense(LicenseJDO license, List<HardwareFingerprint> fingerprints, PersistenceManager pm) {
-		Query q = pm.newQuery(ActivationJDO.class);
-		q.setUnique(true);
-		q.setFilter("license == licenseParam && active == true && serializedFingerprints == fingerprintsParam");
-		q.declareParameters(LicenseJDO.class.getName() + " licenseParam, " +
-				"String fingerprintsParam");
-		return (ActivationJDO) q.execute(license, HardwareFingerprint.toMultiString(fingerprints));
-	}
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

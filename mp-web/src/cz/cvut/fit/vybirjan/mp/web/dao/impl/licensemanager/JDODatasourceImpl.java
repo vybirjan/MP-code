@@ -1,4 +1,4 @@
-package cz.cvut.fit.vybirjan.mp.web.dao;
+package cz.cvut.fit.vybirjan.mp.web.dao.impl.licensemanager;
 
 import java.util.List;
 
@@ -12,13 +12,23 @@ import cz.cvut.fit.vybirjan.mp.serverside.core.DataSource;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Activation;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Feature;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.License;
+import cz.cvut.fit.vybirjan.mp.web.dao.ActivationDAO;
+import cz.cvut.fit.vybirjan.mp.web.dao.LicenseDAO;
 import cz.cvut.fit.vybirjan.mp.web.model.ActivationJDO;
 import cz.cvut.fit.vybirjan.mp.web.model.LicenseJDO;
 
 public class JDODatasourceImpl implements DataSource {
 
 	@Inject
-	private PersistenceManagerFactory pmf;
+	public JDODatasourceImpl(LicenseDAO licDao, ActivationDAO actDao, PersistenceManagerFactory pmf) {
+		this.licDao = licDao;
+		this.actDao = actDao;
+		this.pmf = pmf;
+	}
+
+	private final LicenseDAO licDao;
+	private final ActivationDAO actDao;
+	private final PersistenceManagerFactory pmf;
 
 	@Override
 	public List<? extends Feature> findFeaturesForLicense(License l) {
@@ -33,26 +43,6 @@ public class JDODatasourceImpl implements DataSource {
 	}
 
 	@Override
-	public Activation findActiveActivationForLicense(License l, List<HardwareFingerprint> fingerprints) {
-		PersistenceManager pm = pmf.getPersistenceManager();
-		try {
-			return ActivationJDO.findActiveForLicense((LicenseJDO) l, fingerprints, pm);
-		} finally {
-			pm.close();
-		}
-	}
-
-	@Override
-	public License findByNumber(String licenseNumber) {
-		PersistenceManager pm = pmf.getPersistenceManager();
-		try {
-			return LicenseJDO.findByNumber(licenseNumber, pm);
-		} finally {
-			pm.close();
-		}
-	}
-
-	@Override
 	public void addActivationToLicense(License lic, Activation act) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		LicenseJDO license = (LicenseJDO) lic;
@@ -64,6 +54,16 @@ public class JDODatasourceImpl implements DataSource {
 		} finally {
 			pm.close();
 		}
+	}
+
+	@Override
+	public Activation findActiveActivationForLicense(License l, List<HardwareFingerprint> fingerprints) {
+		return actDao.findActiveActivationForLicense(l, fingerprints);
+	}
+
+	@Override
+	public License findByNumber(String licenseNumber) {
+		return licDao.findByNumber(licenseNumber);
 	}
 
 }

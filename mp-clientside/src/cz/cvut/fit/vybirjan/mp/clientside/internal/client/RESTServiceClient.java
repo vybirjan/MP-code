@@ -85,7 +85,7 @@ public class RESTServiceClient implements LicenseServiceClient {
 	}
 
 	private static LicenseResponse readResponse(HttpURLConnection connection) throws IOException {
-		if (connection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
+		if (connection.getResponseCode() >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
 			return LicenseResponse.internalError();
 		}
 

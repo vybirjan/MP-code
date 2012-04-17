@@ -5,8 +5,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -18,14 +16,6 @@ import cz.cvut.fit.vybirjan.mp.serverside.domain.License;
 
 @PersistenceCapable
 public class LicenseJDO implements License {
-
-	public static LicenseJDO findByNumber(String number, PersistenceManager pm) {
-		Query q = pm.newQuery(LicenseJDO.class);
-		q.setFilter("number == nameParam");
-		q.declareParameters("String nameParam");
-		q.setUnique(true);
-		return (LicenseJDO) q.execute(number);
-	}
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -45,6 +35,8 @@ public class LicenseJDO implements License {
 	private Date validFrom;
 	@Persistent
 	private Date validTo;
+	@Persistent
+	private Date dateIssued;
 	@Persistent(mappedBy = "license")
 	private List<ActivationJDO> activations;
 	@Persistent(mappedBy = "license", defaultFetchGroup = "true")
@@ -169,6 +161,14 @@ public class LicenseJDO implements License {
 
 	public void setValidTo(Date validTo) {
 		this.validTo = validTo;
+	}
+
+	public Date getDateIssued() {
+		return dateIssued;
+	}
+
+	public void setDateIssued(Date dateIssued) {
+		this.dateIssued = dateIssued;
 	}
 
 }

@@ -1,6 +1,7 @@
 package cz.cvut.fit.vybirjan.mp.clientside.internal.fingerprints;
 
 import cz.cvut.fit.vybirjan.mp.clientside.internal.core.HardwareFingerprintProvider;
+import cz.cvut.fit.vybirjan.mp.clientside.internal.fingerprints.linux.LinuxFingerprintProvider;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.fingerprints.win32.Win32FingerprintProvider;
 
 public class HardwareFingerprintProviderFactory {
@@ -32,7 +33,7 @@ public class HardwareFingerprintProviderFactory {
 	}
 
 	private static HardwareFingerprintProvider createLinuxinstance() {
-		throw new AssertionError("Not implemented");
+		return new LinuxFingerprintProvider();
 	}
 
 	public static boolean isWindows() {

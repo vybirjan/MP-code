@@ -1,4 +1,4 @@
-package cz.cvut.fit.vybirjan.mp.web.dao;
+package cz.cvut.fit.vybirjan.mp.web.dao.impl.licensemanager;
 
 import java.security.Key;
 
