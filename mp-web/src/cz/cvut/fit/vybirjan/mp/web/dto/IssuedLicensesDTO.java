@@ -15,6 +15,8 @@ public class IssuedLicensesDTO {
 		private String dateFrom;
 		private String dateTo;
 		private String active;
+		private String key;
+		private long id;
 
 		public String getNumber() {
 			return number;
@@ -56,9 +58,30 @@ public class IssuedLicensesDTO {
 			this.active = Boolean.toString(active);
 		}
 
+		public String getKey() {
+			return key;
+		}
+
+		public void setKey(String key) {
+			this.key = key;
+		}
+
+		public long getId() {
+			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
+		}
+
 	}
 
 	private final List<TableRecord> tableRecords = new ArrayList<IssuedLicensesDTO.TableRecord>();
+	private int totalCount;
+
+	public int getTotalCount() {
+		return totalCount;
+	}
 
 	public List<TableRecord> getTableRecords() {
 		return tableRecords;
@@ -70,8 +93,11 @@ public class IssuedLicensesDTO {
 		rec.setDateFrom(license.getValidFrom());
 		rec.setDateTo(license.getValidTo());
 		rec.setDescription(license.getDescription());
+		rec.setNumber(license.getNumber());
+		rec.setId(license.getId().getId());
 
 		tableRecords.add(rec);
+		totalCount++;
 	}
 
 }

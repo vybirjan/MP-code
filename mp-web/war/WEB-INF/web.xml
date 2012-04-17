@@ -5,7 +5,6 @@
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	version="2.5">
 	
-	<display-name>mgr</display-name>
 	<filter>
 		<filter-name>Guice filter</filter-name>
 		<filter-class>com.google.inject.servlet.GuiceFilter</filter-class>

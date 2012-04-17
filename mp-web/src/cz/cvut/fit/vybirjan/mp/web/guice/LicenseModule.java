@@ -42,8 +42,9 @@ public class LicenseModule extends ServletModule {
 
 		Map<String, String> params = new HashMap<String, String>();
 
-		params.put("com.sun.jersey.config.property.packages",
-				"cz.cvut.fit.vybirjan.mp.serverside.impl.jaxrs;cz.cvut.fit.vybirjan.mp.web.license;cz.cvut.fit.vybirjan.mp.web.controllers");
+		params.put(
+				"com.sun.jersey.config.property.packages",
+				"cz.cvut.fit.vybirjan.mp.serverside.impl.jaxrs;cz.cvut.fit.vybirjan.mp.web.license;cz.cvut.fit.vybirjan.mp.web.controllers;cz.cvut.fit.vybirjan.mp.web.controllers.tml");
 		params.put("com.sun.jersey.config.property.JSPTemplatesBasePath", "/WEB-INF/jsp");
 
 		serve("/*").with(GuiceContainer.class, params);

@@ -1,14 +1,16 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.inject.Inject;
 
-import cz.cvut.fit.vybirjan.mp.serverside.domain.License;
 import cz.cvut.fit.vybirjan.mp.web.dao.LicenseDAO;
 import cz.cvut.fit.vybirjan.mp.web.model.LicenseJDO;
 
@@ -34,7 +36,7 @@ public class LicenseDAOimpl implements LicenseDAO {
 	}
 
 	@Override
-	public License findByNumber(String licenseNumber) {
+	public LicenseJDO findByNumber(String licenseNumber) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		try {
 			Query q = pm.newQuery(LicenseJDO.class);
@@ -53,7 +55,19 @@ public class LicenseDAOimpl implements LicenseDAO {
 		try {
 			Query q = pm.newQuery(LicenseJDO.class);
 			q.setOrdering("dateIssued asc");
-			return (List<LicenseJDO>) q.execute();
+			List<LicenseJDO> result = (List<LicenseJDO>) q.execute();
+			return new ArrayList<LicenseJDO>(result);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public LicenseJDO findById(long id) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			Key k = KeyFactory.createKey(LicenseJDO.class.getSimpleName(), id);
+			return pm.getObjectById(LicenseJDO.class, k);
 		} finally {
 			pm.close();
 		}

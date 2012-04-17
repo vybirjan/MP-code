@@ -14,7 +14,7 @@
 <meta name="author" content="">
 
 <!-- Le styles -->
-<link href="/css/bootstrap.css" rel="stylesheet">
+<link href="/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body {
 	padding-top: 60px;
@@ -75,7 +75,7 @@ body {
 		<hr>
 
 		<footer>
-			<p></p>
+			<p>Icons from <a href="http://glyphicons.com">Glyphicons Free</a>, licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
 		</footer>
 
 	</div>
@@ -84,7 +84,6 @@ body {
 	<!-- Le javascript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="/js/bootstrap.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
 </body>
 </html>

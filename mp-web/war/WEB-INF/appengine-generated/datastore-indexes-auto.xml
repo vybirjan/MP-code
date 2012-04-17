@@ -1,4 +1,10 @@
-<!-- Indices written at Tue, 17 Apr 2012 15:28:34 UTC -->
+<!-- Indices written at Tue, 17 Apr 2012 19:44:59 UTC -->
 
-<datastore-indexes/>
+<datastore-indexes>
 
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="FeatureJDO" ancestor="true" source="auto">
+        <property name="features_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+
+</datastore-indexes>

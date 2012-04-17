@@ -13,4 +13,6 @@ public interface LicenseDAO {
 
 	List<LicenseJDO> findAll();
 
+	LicenseJDO findById(long id);
+
 }
