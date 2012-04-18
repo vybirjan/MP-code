@@ -102,6 +102,13 @@ public class LicenseManagerImpl implements LicenseManager {
 			return LicenseResponse.expired();
 		}
 
+		if (license.getMaxActivations() != null) {
+			List<? extends Activation> activations = dataSource.findActiveActivationsForLicense(license);
+			if (activations.size() >= license.getMaxActivations()) {
+				return LicenseResponse.tooManyActivations();
+			}
+		}
+
 		Activation existingActivation = dataSource.findActiveActivationForLicense(license, request.getFingerprints());
 		if (existingActivation == null) {
 			if (license.isAllowNewActivations()) {

@@ -2,7 +2,7 @@
 <%@ taglib prefix="web" tagdir="/WEB-INF/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
-<web:layout navButton="overview">
+<web:layout navButton="keys">
 	<h1>Overview</h1>
 	<br/>
 	<Strong>Number of licenses issued:</strong> <c:out value="${it.numberOfLicenses}" />

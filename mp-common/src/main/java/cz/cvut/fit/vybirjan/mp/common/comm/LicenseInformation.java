@@ -13,9 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -27,6 +24,12 @@ import cz.cvut.fit.vybirjan.mp.common.comm.xml.TaggedKeyAdapter;
 import cz.cvut.fit.vybirjan.mp.common.crypto.Signing;
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 
+/**
+ * Class containing information about current license.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 @XmlRootElement(name = "licenseInformation")
 public final class LicenseInformation implements Serializable, Cloneable {
 
@@ -51,6 +54,13 @@ public final class LicenseInformation implements Serializable, Cloneable {
 	@XmlElement(name = "signature")
 	private String signature;
 
+	/**
+	 * Signs this instance using private key. Any modification made to this
+	 * instance after signing can be detected by verifying signature using
+	 * {@linkplain LicenseInformation#verify(Key)} method.
+	 * 
+	 * Note that encryption key are not subjects to signing.
+	 */
 	public void sign(Key privateKey) {
 		Signing s = new Signing(privateKey);
 		signature = Utils.encode(s.sign(getFingerprint()));
@@ -101,6 +111,9 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		out.writeChar('>');
 	}
 
+	/**
+	 * Adds new feature into license
+	 */
 	public void addFeature(Feature feature) {
 		if (features == null) {
 			features = new HashSet<Feature>();
@@ -109,12 +122,18 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		features.add(feature);
 	}
 
+	/**
+	 * Removes feature from license
+	 */
 	public void removeFeature(Feature feature) {
 		if (features != null) {
 			features.remove(feature);
 		}
 	}
 
+	/**
+	 * Adds new fingerprint into license
+	 */
 	public void addFingerPrint(HardwareFingerprint fp) {
 		if (fingerPrints == null) {
 			fingerPrints = new HashSet<HardwareFingerprint>();
@@ -123,12 +142,18 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		fingerPrints.add(fp);
 	}
 
+	/**
+	 * Removes fingerprint from license
+	 */
 	public void removeFingerPrint(HardwareFingerprint fp) {
 		if (fingerPrints != null) {
 			fingerPrints.remove(fp);
 		}
 	}
 
+	/**
+	 * Returns unmodifiable set of fingerprints contained in this license.
+	 */
 	public Set<HardwareFingerprint> getFingerPrints() {
 		if (fingerPrints == null) {
 			return Collections.emptySet();
@@ -137,6 +162,9 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		}
 	}
 
+	/**
+	 * Returns unmodifiable set of features contained in this license
+	 */
 	public Set<Feature> getFeatures() {
 		if (features == null) {
 			return Collections.emptySet();
@@ -145,6 +173,13 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		}
 	}
 
+	/**
+	 * Adds new encryption key to this license.
+	 * 
+	 * Adding key does not invalidates signature
+	 * 
+	 * @param key
+	 */
 	public void addKey(TaggedKey key) {
 		if (keys == null) {
 			keys = new LinkedList<TaggedKey>();
@@ -153,12 +188,21 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		keys.add(key);
 	}
 
+	/**
+	 * Removes key from this license.
+	 * 
+	 * Removing key does not invalidates signature
+	 * 
+	 */
 	public void removeKey(TaggedKey key) {
 		if (keys != null) {
 			keys.remove(key);
 		}
 	}
 
+	/**
+	 * Returns unmodifiable list of all keys contained in this license
+	 */
 	public List<TaggedKey> getKeys() {
 		if (keys == null) {
 			return Collections.emptyList();
@@ -167,18 +211,37 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		}
 	}
 
+	/**
+	 * Returns unique number of this license.
+	 */
 	public String getLicenseNumber() {
 		return licenseNumber;
 	}
 
+	/**
+	 * Sets license number.
+	 */
 	public void setLicenseNumber(String licenseNumber) {
 		this.licenseNumber = licenseNumber;
 	}
 
+	/**
+	 * Indicates whether this object was signed using {@link #sign(Key)} method
+	 * 
+	 * @return
+	 */
 	public boolean isSigned() {
 		return signature != null;
 	}
 
+	/**
+	 * Verifies this objects signature using provided public key.
+	 * 
+	 * @param publicKey
+	 *            Public key
+	 * @return True if this object was not modified after it was signed, false
+	 *         otherwise
+	 */
 	public boolean verify(Key publicKey) {
 		if (!isSigned()) {
 			throw new IllegalStateException("License information is not signed");
@@ -201,40 +264,5 @@ public final class LicenseInformation implements Serializable, Cloneable {
 		clone.keys = keys == null ? null : new ArrayList<TaggedKey>(keys);
 
 		return clone;
-	}
-
-	public static void main(String[] args) throws JAXBException {
-		// KeyPair keys = Signing.generateKeyPair();
-
-		JAXBContext context = JAXBContext.newInstance(LicenseRequest.class, LicenseResponse.class, LicenseInformation.class);
-		Marshaller marsh = context.createMarshaller();
-
-		LicenseRequest request = new LicenseRequest("AAAA-0112");
-		request.addFingerprint(new HardwareFingerprint("XXX", "fooo"));
-		marsh.marshal(request, System.out);
-
-		// LicenseInformation info = new LicenseInformation();
-		// info.setLicenseNumber("sdafasdf-dddd-ddd");
-		// info.addFeature(new Feature("asssss", null, new Date()));
-		// info.addFeature(new Feature("another feature", new Date(), new
-		// Date()));
-		// info.addFingerPrint(new HardwareFingerprint("W01",
-		// "dfgsdfgaerQWERf="));
-		// info.addKey(new TaggedKeyImpl(55, new SecretKeySpec(new byte[] { 1 },
-		// "foo")));
-		// info.sign(keys.getPrivate());
-		//
-		// LicenseResponse resp = LicenseResponse.createdNew(info);
-		//
-		// ByteArrayOutputStream out = new ByteArrayOutputStream();
-		// marsh.marshal(resp, System.out);
-		// ByteArrayInputStream in = new
-		// ByteArrayInputStream(out.toByteArray());
-		//
-		// Unmarshaller unmarsh = context.createUnmarshaller();
-		// LicenseResponse response = (LicenseResponse) unmarsh.unmarshal(in);
-		//
-		// System.out.println(response.getLicenseInformation().verify(keys.getPublic()));
-
 	}
 }

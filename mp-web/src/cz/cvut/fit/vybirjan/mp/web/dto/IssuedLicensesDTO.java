@@ -16,6 +16,7 @@ public class IssuedLicensesDTO {
 		private String dateTo;
 		private String active;
 		private String key;
+		private String maxAxtivations;
 		private long id;
 
 		public String getNumber() {
@@ -74,10 +75,24 @@ public class IssuedLicensesDTO {
 			this.id = id;
 		}
 
+		public String getMaxAxtivations() {
+			return maxAxtivations;
+		}
+
+		public void setMaxAxtivations(Integer maxAxtivations) {
+			if (maxAxtivations == null) {
+				this.maxAxtivations = "unlimited";
+			} else {
+				this.maxAxtivations = maxAxtivations.toString();
+			}
+		}
+
 	}
 
 	private final List<TableRecord> tableRecords = new ArrayList<IssuedLicensesDTO.TableRecord>();
 	private int totalCount;
+	private String okMessage;
+	private String errorMessage;
 
 	public int getTotalCount() {
 		return totalCount;
@@ -85,6 +100,22 @@ public class IssuedLicensesDTO {
 
 	public List<TableRecord> getTableRecords() {
 		return tableRecords;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+	public String getOkMessage() {
+		return okMessage;
+	}
+
+	public void setOkMessage(String okMessage) {
+		this.okMessage = okMessage;
 	}
 
 	public void addTableRecord(LicenseJDO license) {
@@ -95,6 +126,7 @@ public class IssuedLicensesDTO {
 		rec.setDescription(license.getDescription());
 		rec.setNumber(license.getNumber());
 		rec.setId(license.getId().getId());
+		rec.setMaxAxtivations(license.getMaxActivations());
 
 		tableRecords.add(rec);
 		totalCount++;

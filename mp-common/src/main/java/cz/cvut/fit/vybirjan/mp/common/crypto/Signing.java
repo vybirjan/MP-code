@@ -11,6 +11,12 @@ import javax.crypto.Cipher;
 
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 
+/**
+ * Helper class for signing data
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class Signing {
 
 	private final Key key;
@@ -19,10 +25,24 @@ public class Signing {
 	public static final String KEY_ALGORITHM = "RSA";
 	public static final int KEY_SIZE = 1024;
 
+	/**
+	 * Creates new instance which will sign and verify data using given key.
+	 * 
+	 * @param key
+	 */
 	public Signing(Key key) {
 		this.key = key;
 	}
 
+	/**
+	 * Verifies data signed by pair key,
+	 * 
+	 * @param data
+	 *            Data to verify
+	 * @param signature
+	 *            Signature of data
+	 * @return true if signature is valid, false otherwise
+	 */
 	public boolean verify(byte[] data, byte[] signature) {
 		try {
 			Cipher c = Cipher.getInstance(CIPHER_ALGORITHM);
@@ -36,6 +56,13 @@ public class Signing {
 		}
 	}
 
+	/**
+	 * Signs data using current key.
+	 * 
+	 * @param data
+	 *            Data to sign
+	 * @return Data signature
+	 */
 	public byte[] sign(byte[] data) {
 		try {
 			Cipher c = Cipher.getInstance(CIPHER_ALGORITHM);
@@ -51,6 +78,11 @@ public class Signing {
 		}
 	}
 
+	/**
+	 * Helper method to generate pair of keys used for signing data.
+	 * 
+	 * @return
+	 */
 	public static KeyPair generateKeyPair() {
 		try {
 			KeyPairGenerator generator = KeyPairGenerator.getInstance(KEY_ALGORITHM);

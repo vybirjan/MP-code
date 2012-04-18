@@ -4,6 +4,13 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
+/**
+ * Class representing one specific feature of application which is limited by
+ * licensing mechanism.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class Feature implements Serializable {
 
 	public static final Comparator<Feature> CODE_COMPARATOR = new Comparator<Feature>() {
@@ -16,6 +23,13 @@ public class Feature implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Creates new feature with given code and validity dates.
+	 * 
+	 * @param code
+	 * @param validFrom
+	 * @param validTo
+	 */
 	public Feature(String code, Date validFrom, Date validTo) {
 		this.code = code;
 		this.validFrom = validFrom == null ? null : (Date) validFrom.clone();
@@ -26,14 +40,29 @@ public class Feature implements Serializable {
 	private final Date validFrom;
 	private final Date validTo;
 
+	/**
+	 * Returns code of feature. Code is used for identification.
+	 * 
+	 * @return
+	 */
 	public String getCode() {
 		return code;
 	}
 
+	/**
+	 * Returns date from which is this feature valid
+	 * 
+	 * @return
+	 */
 	public Date getValidFrom() {
 		return validFrom == null ? null : (Date) validFrom.clone();
 	}
 
+	/**
+	 * Returns date until when is this feature valid
+	 * 
+	 * @return
+	 */
 	public Date getValidTo() {
 		return validTo == null ? null : (Date) validTo.clone();
 	}

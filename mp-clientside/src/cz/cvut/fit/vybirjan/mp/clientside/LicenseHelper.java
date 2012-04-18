@@ -12,6 +12,12 @@ import cz.cvut.fit.vybirjan.mp.common.RunnableWithResult;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseInformation;
 import cz.cvut.fit.vybirjan.mp.common.comm.ResponseType;
 
+/**
+ * Helper class to ease working with license service.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class LicenseHelper {
 
 	public static abstract class LicenseNumberProviderAdapter implements LicenseNumberProvider {
@@ -30,19 +36,59 @@ public class LicenseHelper {
 
 	}
 
+	/**
+	 * Callback interface used during license verification.
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 */
 	public interface LicenseNumberProvider {
 
+		/**
+		 * Called when license number is needed in order to get license
+		 * information.
+		 * 
+		 * @return License number or null to stop further requests.
+		 */
 		String getLicenseNumber();
 
+		/**
+		 * Called when IOException occured when requesting license.
+		 * 
+		 * @param e
+		 */
 		void onIOException(IOException e);
 
+		/**
+		 * Called when retrieving license failed
+		 * 
+		 * @param response
+		 */
 		void onRetrieveException(ResponseType response);
 
+		/**
+		 * Check when verification of received or locally stored license
+		 * occured.
+		 * 
+		 * @param type
+		 */
 		void onCheckException(LicenseCheckErrorType type);
 
+		/**
+		 * Called when provider is no longer needed.
+		 */
 		void destroy();
 	}
 
+	/**
+	 * Tries to obtain valid license. May call provided
+	 * {@link LicenseNumberProvider} to obtain additional information.
+	 * 
+	 * @param numberProvider
+	 * @return Valid license information or null, if provided
+	 *         LicenseNumberProvider returned null on
+	 *         {@link LicenseNumberProvider#getLicenseNumber()} call.
+	 */
 	public static LicenseInformation getValidLicense(LicenseNumberProvider numberProvider) {
 		LicenseService service = LicenseService.getInstance();
 
@@ -68,6 +114,21 @@ public class LicenseHelper {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Tries to obtain valid license. May call provided
+	 * {@link LicenseNumberProvider} to obtain additional information.
+	 * </p>
+	 * <p>
+	 * Method is expected to be called from UI thread, all calls to
+	 * LicenseNumberProvider are asynchronous, dispatching UI events is not
+	 * interrupted when waiting for response.
+	 * </p>
+	 * 
+	 * @param p
+	 * @param e
+	 * @return
+	 */
 	public static LicenseInformation getValidLicenseFromUI(final LicenseNumberProvider p, Executor e) {
 		if (!isUiThread()) {
 			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
@@ -110,6 +171,9 @@ public class LicenseHelper {
 		return null;
 	}
 
+	/**
+	 * Indicates whether current thread is SWT ui thread.
+	 */
 	private static boolean isUiThread() {
 		return Thread.currentThread() == Display.getDefault().getThread();
 	}

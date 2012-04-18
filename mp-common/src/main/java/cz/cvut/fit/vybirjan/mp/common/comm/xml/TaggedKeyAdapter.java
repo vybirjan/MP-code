@@ -7,6 +7,12 @@ import cz.cvut.fit.vybirjan.mp.common.comm.xml.marshallable.MarshallableTaggedKe
 import cz.cvut.fit.vybirjan.mp.common.crypto.FileEncryptor;
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 
+/**
+ * Helper class to serialize tagged key using jax-b
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class TaggedKeyAdapter extends XmlAdapter<MarshallableTaggedKey, TaggedKey> {
 
 	@Override

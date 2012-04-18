@@ -10,6 +10,13 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Class representing fingerprint unique for computer which runs this
+ * application.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 @XmlRootElement(name = "hardwareFingerprint")
 public class HardwareFingerprint implements Serializable, Comparable<HardwareFingerprint> {
 
@@ -19,6 +26,14 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 
 	}
 
+	/**
+	 * Creates fingerprint with name and value
+	 * 
+	 * @param name
+	 *            Name of fingerprint
+	 * @param value
+	 *            Fingerprint
+	 */
 	public HardwareFingerprint(String name, String value) {
 		this.name = name;
 		this.value = value;
@@ -32,10 +47,20 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 	@XmlAttribute
 	private String value;
 
+	/**
+	 * Returns name which identifies type of this fingerprint.
+	 * 
+	 * @return
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Returns the value of fingerprint as it was collected from machine.
+	 * 
+	 * @return
+	 */
 	public String getValue() {
 		return value;
 	}
@@ -45,6 +70,12 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 		return name + VALUE_SPLIT + value;
 	}
 
+	/**
+	 * Loads fingerpring from string representation
+	 * 
+	 * @param str
+	 * @return
+	 */
 	public static HardwareFingerprint fromString(String str) {
 		String[] data = str.split(VALUE_SPLIT);
 		if (data.length != 2) {
@@ -56,6 +87,15 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 		return f;
 	}
 
+	/**
+	 * Saves multiple fingerprints into single String. Useful for fast
+	 * comparision. Resulting string is not dependent on order of fingerprints
+	 * in provided collection.
+	 * 
+	 * @param fingerprints
+	 *            Collection of fingerprints to write to string
+	 * @return Resulting string representation of fingerprints
+	 */
 	public static String toMultiString(Collection<? extends HardwareFingerprint> fingerprints) {
 		List<HardwareFingerprint> copy = new LinkedList<HardwareFingerprint>(fingerprints);
 		Collections.sort(copy);
@@ -70,10 +110,24 @@ public class HardwareFingerprint implements Serializable, Comparable<HardwareFin
 		return sb.toString();
 	}
 
+	/**
+	 * Helper method to convert multiple fingerprints into string
+	 * 
+	 * @see HardwareFingerprint#toMultiString(Collection)
+	 * 
+	 */
 	public static String toString(HardwareFingerprint... fingerprints) {
 		return toMultiString(Arrays.asList(fingerprints));
 	}
 
+	/**
+	 * Parses fingerprints previously serialized into string by
+	 * {@link HardwareFingerprint#toMultiString(Collection)}
+	 * 
+	 * @param str
+	 *            Serialized fingerprints
+	 * @return
+	 */
 	public static List<HardwareFingerprint> fromMultiString(String str) {
 		if (str.isEmpty()) {
 			return Collections.emptyList();

@@ -25,6 +25,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 
+/**
+ * Class with helper methods to encrypt and decrypt files.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public final class FileEncryptor {
 
 	public static final String CLASS_SUFFIX = ".class";
@@ -36,12 +42,30 @@ public final class FileEncryptor {
 
 	private static final int BUFFER_SIZE = 1024;
 
+	/**
+	 * Basic interface for processing elements between sources.
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 * @param <E>
+	 */
 	public interface ProcessStrategy<E> {
 
+		/**
+		 * Method which should process given element
+		 */
 		void process(E element, InputStream source, OutputStream target) throws IOException;
 
 	}
 
+	/**
+	 * Creates default processing strategy which encrypts data using specified
+	 * key.
+	 * 
+	 * @param key
+	 *            Key to encrypt data
+	 * @return
+	 */
 	public static final ProcessStrategy<Object> createDefaultEncryptStrategy(Key key) {
 		try {
 			return new InitVectorEncryptStrategy(Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM), key, DEFAULT_IV_SIZE);
@@ -50,6 +74,12 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Creates default strategy which decrpts data using specified key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public static final ProcessStrategy<Object> createDefaultDecryptStrategy(Key key) {
 		try {
 			return new InitVectorDecryptStrategy(Cipher.getInstance(DEFAULT_CIPHER_ALGORITHM), key, DEFAULT_IV_SIZE);
@@ -58,8 +88,24 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Wrapper for encryption strategy which prepends given tag in front of
+	 * data.
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 * @param <T>
+	 */
 	public static final class TaggindEncryptionStrategy<T> implements ProcessStrategy<T> {
 
+		/**
+		 * Creates wrapper
+		 * 
+		 * @param tag
+		 *            Tag to be prepend to data
+		 * @param next
+		 *            Strategy delegate used to process data
+		 */
 		public TaggindEncryptionStrategy(int tag, ProcessStrategy<T> next) {
 			this.tag = tag;
 			this.next = next;
@@ -76,6 +122,14 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Wrapper class used to process .class files. Class files are delegated to
+	 * wrapped strategy to process, other files are just copied without
+	 * modification
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 */
 	public static final class JarEntryClassProcessingStrategy implements ProcessStrategy<JarEntry> {
 
 		public JarEntryClassProcessingStrategy(ProcessStrategy<? super JarEntry> delegate) {
@@ -95,6 +149,14 @@ public final class FileEncryptor {
 
 	}
 
+	/**
+	 * Strategy used for encryption. Encrypts data using provided symmetric
+	 * cipher with init vector. Saves init vector used for encryption at the
+	 * beginning of processed data.
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 */
 	public static final class InitVectorEncryptStrategy implements ProcessStrategy<Object> {
 
 		public InitVectorEncryptStrategy(Cipher c, Key key, int initVectorSize) {
@@ -132,6 +194,14 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Class used to decrypt data encrypted using
+	 * {@link InitVectorEncryptStrategy}. Reads init vector from first n bytes
+	 * and uses it in decryption.
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 */
 	public static final class InitVectorDecryptStrategy implements ProcessStrategy<Object> {
 
 		public InitVectorDecryptStrategy(Cipher c, Key key, int initVectorSize) {
@@ -178,6 +248,17 @@ public final class FileEncryptor {
 		throw new AssertionError("Class not intended for instantiation");
 	}
 
+	/**
+	 * Helper method for processing JAR files. JAR file is processed by entries.
+	 * 
+	 * @param toProcess
+	 *            JAr file to process
+	 * @param target
+	 *            Output file to where write processed data
+	 * @param strategy
+	 *            Strategy used to process jar file
+	 * @throws IOException
+	 */
 	public static void processJarFile(JarFile toProcess, File target, ProcessStrategy<? super JarEntry> strategy) throws IOException {
 		ZipOutputStream out = new ZipOutputStream(new FileOutputStream(target));
 		try {
@@ -202,26 +283,101 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Helper method used to encrypt content of jar file. Only .class files are
+	 * encrypted.
+	 * 
+	 * @param source
+	 *            jar file to encrypt
+	 * @param target
+	 *            File where to write encrypter jar file
+	 * @param key
+	 *            Key used for encryption
+	 * @param tag
+	 *            Tag added at the beginning of each encrypted class used to
+	 *            identify key used in encryption.
+	 * @throws IOException
+	 */
 	public static void encryptJarFile(JarFile source, File target, Key key, int tag) throws IOException {
 		processJarFile(source, target, new JarEntryClassProcessingStrategy(new TaggindEncryptionStrategy(tag, createDefaultEncryptStrategy(key))));
 	}
 
+	/**
+	 * Helper method used to encrypt content of jar file. Only .class files are
+	 * encrypted.
+	 * 
+	 * @param source
+	 *            jar file to encrypt
+	 * @param target
+	 *            File where to write encrypter jar file
+	 * @param key
+	 *            Key used for encryption
+	 * @param tag
+	 *            Tag added at the beginning of each encrypted class used to
+	 *            identify key used in encryption.
+	 * @throws IOException
+	 */
 	public static void encryptJarFile(JarFile source, File target, Key key) throws IOException {
 		processJarFile(source, target, new JarEntryClassProcessingStrategy(createDefaultEncryptStrategy(key)));
 	}
 
+	/**
+	 * Helper method used to decrypt content of jar file. Only .class files are
+	 * encrypted.
+	 * 
+	 * @param source
+	 *            jar file to decrypt
+	 * @param target
+	 *            File where to write decrypted jar file
+	 * @param key
+	 *            Key used for decrpytion
+	 * @throws IOException
+	 */
 	public static void decryptJarFile(JarFile source, File target, Key key) throws IOException {
 		processJarFile(source, target, new JarEntryClassProcessingStrategy(createDefaultDecryptStrategy(key)));
 	}
 
+	/**
+	 * Helper method to encrypt whole file using symmetric cipher.
+	 * 
+	 * @param source
+	 *            File to encrypt
+	 * @param target
+	 *            file where to write encrypted source
+	 * @param key
+	 *            Key used for encryption
+	 * @throws IOException
+	 */
 	public static void encryptFile(File source, File target, Key key) throws IOException {
 		processFile(source, target, createDefaultEncryptStrategy(key));
 	}
 
+	/**
+	 * Helper method used to decrypt content of file.
+	 * 
+	 * @param source
+	 *            file to decrypt
+	 * @param target
+	 *            File where to write decrypted file
+	 * @param key
+	 *            Key used for decrpytion
+	 * @throws IOException
+	 */
 	public static void decryptFile(File source, File target, Key key) throws IOException {
 		processFile(source, target, createDefaultDecryptStrategy(key));
 	}
 
+	/**
+	 * Helper method which processes file using provided strategy
+	 * 
+	 * @param source
+	 *            Source file
+	 * @param target
+	 *            Target file
+	 * @param strategy
+	 *            Strategy used during processing
+	 * @throws IOException
+	 */
 	public static void processFile(File source, File target, ProcessStrategy<? super File> strategy) throws IOException {
 		FileInputStream in = new FileInputStream(source);
 		try {
@@ -242,6 +398,16 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Helper method which copies data from one stram to another using small
+	 * buffer.
+	 * 
+	 * @param source
+	 *            Source stream
+	 * @param target
+	 *            Target stream
+	 * @throws IOException
+	 */
 	public static void copyData(InputStream source, OutputStream target) throws IOException {
 		byte[] buffer = new byte[BUFFER_SIZE];
 		int read = 0;
@@ -252,6 +418,13 @@ public final class FileEncryptor {
 
 	}
 
+	/**
+	 * Method to serialize tagged key into byte array.
+	 * 
+	 * @param key
+	 *            Key to serialize
+	 * @return
+	 */
 	public static byte[] serializeKey(TaggedKey key) {
 		byte[] tag = Utils.toByteArray(key.getTag());
 		byte[] alg = Utils.toUtf8(key.getAlgorithm());
@@ -269,6 +442,14 @@ public final class FileEncryptor {
 		}
 	}
 
+	/**
+	 * Method to deserialize tagged key from byte array previously serialized by
+	 * {@link #serializeKey(TaggedKey)} method.
+	 * 
+	 * @param key
+	 *            Key to serialize
+	 * @return
+	 */
 	public static TaggedKey deserializeKey(byte[] data) {
 		int tag = Utils.toInt(data, 0);
 		int algLen = Utils.toInt(data, 4);
@@ -279,6 +460,12 @@ public final class FileEncryptor {
 		return new TaggedKeyImpl(tag, new SecretKeySpec(keyData, alg));
 	}
 
+	/**
+	 * Generates new key with given tag.
+	 * 
+	 * @param tag
+	 * @return
+	 */
 	public static TaggedKey generateDefaultKey(int tag) {
 		try {
 			KeyGenerator keygen = KeyGenerator.getInstance(DEFAULT_CIPHER);

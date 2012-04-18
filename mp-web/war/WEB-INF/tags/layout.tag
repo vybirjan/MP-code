@@ -59,7 +59,7 @@ body {
 						<li<c:if test="${navButton=='overview'}"> class="active"</c:if>><a
 							href="/web/index">Overview</a></li>
 						<li<c:if test="${navButton=='licenses'}"> class="active"</c:if>><a href="/web/licenses">Issued licenses</a></li>
-						<li><a href="#">Link</a></li>
+						<li<c:if test="${navButton=='keys'}"> class="active"</c:if>><a href="/web/keys">Encryption keys</a></li>
 					</ul>
 				</div>
 				<!--/.well -->

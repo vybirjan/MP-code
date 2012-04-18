@@ -2,6 +2,12 @@ package cz.cvut.fit.vybirjan.mp.common.crypto;
 
 import javax.crypto.SecretKey;
 
+/**
+ * Implementation of tagged key.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class TaggedKeyImpl implements TaggedKey {
 
 	private static final long serialVersionUID = 1L;

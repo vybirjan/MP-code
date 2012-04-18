@@ -5,6 +5,12 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import cz.cvut.fit.vybirjan.mp.common.comm.Feature;
 import cz.cvut.fit.vybirjan.mp.common.comm.xml.marshallable.MarshallableFeature;
 
+/**
+ * Helper class used to serialize feature by jax-b
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class FeatureAdapter extends XmlAdapter<MarshallableFeature, Feature> {
 
 	@Override

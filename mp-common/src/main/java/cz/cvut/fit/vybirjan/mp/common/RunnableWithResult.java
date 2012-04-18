@@ -6,6 +6,7 @@ package cz.cvut.fit.vybirjan.mp.common;
  * @author Jan Vybíral
  * 
  * @param <T>
+ *            Type of result
  */
 public abstract class RunnableWithResult<T> implements Runnable {
 

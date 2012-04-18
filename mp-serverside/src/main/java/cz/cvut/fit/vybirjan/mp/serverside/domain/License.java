@@ -12,7 +12,7 @@ public interface License {
 
 	String getDescription();
 
-	int getMaxActivations();
+	Integer getMaxActivations();
 
 	String getNumber();
 

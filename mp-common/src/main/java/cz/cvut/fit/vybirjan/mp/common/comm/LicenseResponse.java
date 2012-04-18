@@ -6,6 +6,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * Class containing data sent from server as response to {@link LicenseRequest}
+ * sent by client.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 @XmlRootElement(name = "response")
 public class LicenseResponse implements Serializable {
 
@@ -25,10 +32,21 @@ public class LicenseResponse implements Serializable {
 		this.licenseInformation = licenseInfo;
 	}
 
+	/**
+	 * Returns type of response
+	 * 
+	 * @return
+	 */
 	public ResponseType getType() {
 		return type;
 	}
 
+	/**
+	 * Returns information about requested license, or null if request failed
+	 * for some reason.
+	 * 
+	 * @return
+	 */
 	public LicenseInformation getLicenseInformation() {
 		return licenseInformation;
 	}
@@ -65,6 +83,16 @@ public class LicenseResponse implements Serializable {
 		return new LicenseResponse(ResponseType.ERROR_COMMUNICATION_ERROR, null);
 	}
 
+	public static LicenseResponse tooManyActivations() {
+		return new LicenseResponse(ResponseType.ERROR_TOO_MANY_ACTIVATIONS, null);
+	}
+
+	/**
+	 * Returns true if request was successful and license information can be
+	 * read using {@link #getLicenseInformation()} method.
+	 * 
+	 * @return
+	 */
 	public boolean isOk() {
 		return (type == ResponseType.OK_EXISTING_VERIFIED || type == ResponseType.OK_NEW_CREATED) && licenseInformation != null;
 	}

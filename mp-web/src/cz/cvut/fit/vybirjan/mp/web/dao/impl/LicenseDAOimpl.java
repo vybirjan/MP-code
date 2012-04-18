@@ -7,6 +7,8 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 
+import org.datanucleus.exceptions.NucleusObjectNotFoundException;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.inject.Inject;
@@ -68,6 +70,31 @@ public class LicenseDAOimpl implements LicenseDAO {
 		try {
 			Key k = KeyFactory.createKey(LicenseJDO.class.getSimpleName(), id);
 			return pm.getObjectById(LicenseJDO.class, k);
+		} catch (NucleusObjectNotFoundException e) {
+			return null;
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public LicenseJDO persist(LicenseJDO jdo) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			return pm.makePersistent(jdo);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public void delete(LicenseJDO lic) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			lic = pm.makePersistent(lic);
+			pm.deletePersistentAll(lic.removeAllActivations());
+			pm.deletePersistentAll(lic.removeAllFeatures());
+			pm.deletePersistent(lic);
 		} finally {
 			pm.close();
 		}

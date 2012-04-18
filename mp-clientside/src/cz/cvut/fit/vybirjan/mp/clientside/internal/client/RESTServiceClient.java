@@ -20,6 +20,12 @@ import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseRequest;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
 
+/**
+ * Class for communication with server using REST API.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class RESTServiceClient implements LicenseServiceClient {
 
 	private static final String ACTIVATIONS_SUFFIX = "activations";
@@ -51,17 +57,19 @@ public class RESTServiceClient implements LicenseServiceClient {
 		}
 	}
 
-	public RESTServiceClient(String baseurl, boolean secure) {
+	public RESTServiceClient(String appId, String baseurl, boolean secure) {
 		this.baseUrl = baseurl;
 		this.secure = secure;
+		this.appId = appId;
 	}
 
 	private final String baseUrl;
 	private final boolean secure;
+	private final String appId;
 
 	@Override
 	public LicenseResponse activateLicense(String licenseNumber, List<HardwareFingerprint> fingerprints) throws IOException {
-		LicenseRequest request = new LicenseRequest(licenseNumber);
+		LicenseRequest request = new LicenseRequest(appId, licenseNumber);
 		request.addFingerprints(fingerprints);
 
 		HttpURLConnection connection = createConnection(POST);
@@ -122,7 +130,7 @@ public class RESTServiceClient implements LicenseServiceClient {
 
 	@Override
 	public LicenseResponse getLicense(String licenseNumber, List<HardwareFingerprint> fingerprints) throws IOException {
-		LicenseRequest request = new LicenseRequest(licenseNumber);
+		LicenseRequest request = new LicenseRequest(appId, licenseNumber);
 		request.addFingerprints(fingerprints);
 
 		HttpURLConnection connection = createConnection(GET);

@@ -21,9 +21,17 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.internal.StartupThreading.StartupRunnable;
 
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseCheckException.LicenseCheckErrorType;
+import cz.cvut.fit.vybirjan.mp.clientside.LicenseHelper;
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseHelper.LicenseNumberProvider;
 import cz.cvut.fit.vybirjan.mp.common.comm.ResponseType;
 
+/**
+ * Dialog prompting user for license number in need. Usable with
+ * {@link LicenseHelper#getValidLicenseFromUI(LicenseNumberProvider, java.util.concurrent.Executor)}
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class LicenseActivationDialog extends TitleAreaDialog implements LicenseNumberProvider {
 
 	public LicenseActivationDialog(Shell parentShell) {

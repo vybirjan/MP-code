@@ -1,5 +1,6 @@
 package cz.cvut.fit.vybirjan.mp.web.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -28,7 +29,7 @@ public class LicenseJDO implements License {
 	@Persistent
 	private String description;
 	@Persistent
-	private int maxActivation;
+	private Integer maxActivation;
 	@Persistent
 	private String number;
 	@Persistent
@@ -58,7 +59,7 @@ public class LicenseJDO implements License {
 	}
 
 	@Override
-	public int getMaxActivations() {
+	public Integer getMaxActivations() {
 		return maxActivation;
 	}
 
@@ -131,6 +132,34 @@ public class LicenseJDO implements License {
 		}
 	}
 
+	public List<ActivationJDO> removeAllActivations() {
+		if (activations == null) {
+			return Collections.emptyList();
+		} else {
+			List<ActivationJDO> ret = new ArrayList<ActivationJDO>(activations);
+
+			for (ActivationJDO activation : ret) {
+				removeActivation(activation);
+			}
+
+			return ret;
+		}
+	}
+
+	public List<FeatureJDO> removeAllFeatures() {
+		if (features == null) {
+			return Collections.emptyList();
+		} else {
+			List<FeatureJDO> ret = new ArrayList<FeatureJDO>(features);
+
+			for (FeatureJDO feature : ret) {
+				removeFeature(feature);
+			}
+
+			return ret;
+		}
+	}
+
 	public void setId(Key id) {
 		this.id = id;
 	}
@@ -147,7 +176,7 @@ public class LicenseJDO implements License {
 		this.description = description;
 	}
 
-	public void setMaxActivation(int maxActivation) {
+	public void setMaxActivation(Integer maxActivation) {
 		this.maxActivation = maxActivation;
 	}
 

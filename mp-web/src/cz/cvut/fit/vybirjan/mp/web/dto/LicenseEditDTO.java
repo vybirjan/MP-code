@@ -10,17 +10,31 @@ public class LicenseEditDTO {
 		this.active = l.isActive();
 		this.allowActivations = l.isAllowNewActivations();
 		this.description = l.getDescription();
+		this.maxActivations = l.getMaxActivations() == null ? null : l.getMaxActivations().toString();
+	}
+
+	public LicenseEditDTO(Long id, String name, boolean active, boolean allowActivations, String description, String maxActivations) {
+		this.id = id;
+		this.name = name;
+		this.active = active;
+		this.allowActivations = allowActivations;
+		this.description = description;
+		this.maxActivations = maxActivations;
 	}
 
 	public LicenseEditDTO() {
 
 	}
 
+	private String numberError;
+	private String maxActivationsError;
+
 	private Long id;
 	private String name;
 	private boolean active = true;
 	private boolean allowActivations = true;
 	private String description = "";
+	private String maxActivations;
 
 	public String getName() {
 		return name;
@@ -48,5 +62,29 @@ public class LicenseEditDTO {
 
 	public String getDescription() {
 		return description;
+	}
+
+	public String getMaxActivations() {
+		return maxActivations;
+	}
+
+	public void setMaxActivations(String maxActivations) {
+		this.maxActivations = maxActivations;
+	}
+
+	public String getNumberError() {
+		return numberError;
+	}
+
+	public String getMaxActivationsError() {
+		return maxActivationsError;
+	}
+
+	public void setNumberError(String nameError) {
+		this.numberError = nameError;
+	}
+
+	public void setMaxActivationsError(String maxActivationsError) {
+		this.maxActivationsError = maxActivationsError;
 	}
 }

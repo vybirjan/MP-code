@@ -1,10 +1,25 @@
 package cz.cvut.fit.vybirjan.mp.clientside;
 
+/**
+ * Exception thrown during license validation.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class LicenseCheckException extends Exception {
 
 	public static enum LicenseCheckErrorType {
+		/**
+		 * No license to check was found
+		 */
 		NOT_FOUND,
+		/**
+		 * License is expired
+		 */
 		EXPIRED,
+		/**
+		 * License is not valid (invalid or missing signature)
+		 */
 		INVALID
 	}
 
@@ -16,6 +31,11 @@ public class LicenseCheckException extends Exception {
 
 	private final LicenseCheckErrorType error;
 
+	/**
+	 * Returns type of error
+	 * 
+	 * @return
+	 */
 	public LicenseCheckErrorType getErrorType() {
 		return error;
 	}

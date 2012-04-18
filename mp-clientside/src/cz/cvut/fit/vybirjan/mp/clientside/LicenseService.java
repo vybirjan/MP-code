@@ -16,6 +16,13 @@ import cz.cvut.fit.vybirjan.mp.common.comm.Feature;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseInformation;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
 
+/**
+ * Class used by desktop application to access information about license and to
+ * request new license.
+ * 
+ * @author Jan Vybíral
+ * 
+ */
 public class LicenseService {
 
 	private static class InstanceHolder {
@@ -24,12 +31,17 @@ public class LicenseService {
 
 	}
 
+	/**
+	 * Returns instance of service
+	 * 
+	 * @return
+	 */
 	public static LicenseService getInstance() {
 		return InstanceHolder.INSTANCE;
 	}
 
 	private static LicenseService createInstance() {
-		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("localhost:8888/license/", false),
+		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("testapp", "localhost:8888/license/", false),
 				HardwareFingerprintProviderFactory.getProvider());
 	}
 
@@ -70,6 +82,12 @@ public class LicenseService {
 		return currentLicense;
 	}
 
+	/**
+	 * Returns current license information, or null if no license information is
+	 * available
+	 * 
+	 * @return
+	 */
 	public LicenseInformation getCurrent() {
 		LicenseInformation info = getCurrentInternal();
 		return info == null ? null : (LicenseInformation) info.clone();
@@ -92,6 +110,10 @@ public class LicenseService {
 		}
 	}
 
+	/**
+	 * Clears current license. Any consecutive calls to {@link #getCurrent()}
+	 * will return null.
+	 */
 	public void clearCurrentLicense() {
 		synchronized (licenseLock) {
 			currentLicense = null;
@@ -106,6 +128,21 @@ public class LicenseService {
 		SecurityHook.clearKeys();
 	}
 
+	/**
+	 * Requests activation of license. If this method succeedes, any consecutive
+	 * calls to {@link #getCurrent()} will, return obtained license.
+	 * 
+	 * @param licenseNumber
+	 *            Number of license to obtain from server
+	 * @return Information about obtained license
+	 * @throws LicenseRetrieveException
+	 *             Thrown when obtaining license from server fails
+	 * @throws LicenseCheckException
+	 *             Thrown when validation of obtained license fails
+	 * @throws IOException
+	 *             Thrown when connection to license server could not be
+	 *             established
+	 */
 	public LicenseInformation activateLicense(String licenseNumber) throws LicenseRetrieveException, LicenseCheckException, IOException {
 		LicenseResponse response = serviceClient.activateLicense(licenseNumber, fingerprintProvider.collectFingerprints());
 
@@ -119,6 +156,13 @@ public class LicenseService {
 		}
 	}
 
+	/**
+	 * Checks current license without connecting to central server.
+	 * 
+	 * @return Current license information.
+	 * @throws LicenseCheckException
+	 *             Thrown when checking current license fails.
+	 */
 	public LicenseInformation checkOffline() throws LicenseCheckException {
 		try {
 			return (LicenseInformation) checkLicense(getCurrentInternal()).clone();
@@ -128,6 +172,18 @@ public class LicenseService {
 		}
 	}
 
+	/**
+	 * Connects to server and verifies current license.
+	 * 
+	 * @return License information obtained from server.
+	 * @throws LicenseCheckException
+	 *             Thrown when checking license fails
+	 * @throws LicenseRetrieveException
+	 *             Thrown when retireving license from server fails
+	 * @throws IOException
+	 *             Thrown when connection to license server could not be
+	 *             established
+	 */
 	public LicenseInformation checkOnline() throws LicenseCheckException, LicenseRetrieveException, IOException {
 		try {
 			LicenseInformation info = getCurrentInternal();
