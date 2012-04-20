@@ -53,6 +53,7 @@ public class RESTServiceClient implements LicenseServiceClient {
 			MARSHALLER = JAXB_CONTEXT.createMarshaller();
 			UNMARSHALLER = JAXB_CONTEXT.createUnmarshaller();
 		} catch (JAXBException e) {
+			e.printStackTrace();
 			throw new AssertionError("Could not create JAXB context");
 		}
 	}

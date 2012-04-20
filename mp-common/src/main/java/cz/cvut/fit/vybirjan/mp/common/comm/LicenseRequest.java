@@ -100,7 +100,7 @@ public class LicenseRequest implements Serializable {
 	 * 
 	 * @return
 	 */
-	public String getApplicationId() {
+	public String getApplicationIdx() {
 		return applicationId;
 	}
 

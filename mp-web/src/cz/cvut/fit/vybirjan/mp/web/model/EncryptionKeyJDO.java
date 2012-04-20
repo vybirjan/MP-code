@@ -5,7 +5,10 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Key;
+
+import cz.cvut.fit.vybirjan.mp.common.Utils;
 
 @PersistenceCapable
 public class EncryptionKeyJDO {
@@ -16,9 +19,9 @@ public class EncryptionKeyJDO {
 	@Persistent
 	private String appId;
 	@Persistent
-	private String publicKey;
+	private Blob publicKey;
 	@Persistent
-	private String privateKey;
+	private Blob privateKey;
 
 	public Key getId() {
 		return id;
@@ -37,19 +40,43 @@ public class EncryptionKeyJDO {
 	}
 
 	public String getPublicKey() {
-		return publicKey;
+		return publicKey == null ? null : Utils.encode(publicKey.getBytes());
 	}
 
-	public void setPublicKey(String publicKey) {
-		this.publicKey = publicKey;
+	public void setPublicKey(java.security.Key publicKey) {
+		if (publicKey == null) {
+			this.publicKey = null;
+		} else {
+			this.publicKey = new Blob((Utils.serialize(publicKey)));
+		}
 	}
 
 	public String getPrivateKey() {
-		return privateKey;
+		return privateKey == null ? null : Utils.encode(privateKey.getBytes());
 	}
 
-	public void setPrivateKey(String privateKey) {
-		this.privateKey = privateKey;
+	public void setPrivateKey(java.security.Key privateKey) {
+		if (privateKey == null) {
+			this.privateKey = null;
+		} else {
+			this.privateKey = new Blob(Utils.serialize(privateKey));
+		}
+	}
+
+	public java.security.Key deserializePublic() {
+		if (publicKey == null) {
+			return null;
+		} else {
+			return Utils.deserialize(publicKey.getBytes(), java.security.Key.class);
+		}
+	}
+
+	public java.security.Key deserializePrivate() {
+		if (privateKey == null) {
+			return null;
+		} else {
+			return Utils.deserialize(privateKey.getBytes(), java.security.Key.class);
+		}
 	}
 
 }

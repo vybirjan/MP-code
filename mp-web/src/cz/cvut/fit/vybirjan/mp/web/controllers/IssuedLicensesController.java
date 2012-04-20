@@ -22,6 +22,7 @@ import com.sun.jersey.api.view.Viewable;
 
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 import cz.cvut.fit.vybirjan.mp.web.dao.LicenseDAO;
+import cz.cvut.fit.vybirjan.mp.web.dto.DTO;
 import cz.cvut.fit.vybirjan.mp.web.dto.IssuedLicensesDTO;
 import cz.cvut.fit.vybirjan.mp.web.dto.LicenseEditDTO;
 import cz.cvut.fit.vybirjan.mp.web.model.LicenseJDO;
@@ -94,7 +95,7 @@ public class IssuedLicensesController {
 			/*
 			 * Update license number
 			 */
-			if (isnullOrEmpty(number)) {
+			if (DTO.isNullOrEmpty(number)) {
 				// error empty number
 				LicenseEditDTO dto = new LicenseEditDTO(id, number, active != null, allowActivations != null, description, numOfActivations);
 				dto.setNumberError("License number must not be empty");
@@ -128,7 +129,7 @@ public class IssuedLicensesController {
 			/*
 			 * Update number of licenses
 			 */
-			if (isnullOrEmpty(numOfActivations)) {
+			if (DTO.isNullOrEmpty(numOfActivations)) {
 				l.setMaxActivation(null);
 			} else {
 				try {
@@ -178,7 +179,7 @@ public class IssuedLicensesController {
 		LicenseJDO newLicense = new LicenseJDO();
 
 		// validate number
-		if (isnullOrEmpty(number)) {
+		if (DTO.isNullOrEmpty(number)) {
 			LicenseEditDTO dto = new LicenseEditDTO(null, number, active != null, allowActivations != null, description, numOfActivations);
 			dto.setNumberError("Number must not be empty");
 			return Response.ok(new Viewable("/license-form", dto)).build();
@@ -194,7 +195,7 @@ public class IssuedLicensesController {
 		}
 
 		// validate max activations
-		if (!isnullOrEmpty(numOfActivations)) {
+		if (!DTO.isNullOrEmpty(numOfActivations)) {
 			try {
 				newLicense.setMaxActivation(Integer.parseInt(numOfActivations));
 			} catch (NumberFormatException e) {
@@ -226,7 +227,4 @@ public class IssuedLicensesController {
 		}
 	}
 
-	private static boolean isnullOrEmpty(String str) {
-		return str == null || str.trim().isEmpty();
-	}
 }

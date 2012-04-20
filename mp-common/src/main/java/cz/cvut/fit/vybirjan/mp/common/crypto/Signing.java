@@ -52,7 +52,7 @@ public class Signing {
 			return Arrays.equals(decrypted, dataHash);
 		} catch (GeneralSecurityException e) {
 			e.printStackTrace();
-			throw new AssertionError("Cipher error");
+			return false;
 		}
 	}
 

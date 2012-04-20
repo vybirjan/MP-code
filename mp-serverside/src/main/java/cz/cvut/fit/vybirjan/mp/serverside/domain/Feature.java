@@ -1,6 +1,5 @@
 package cz.cvut.fit.vybirjan.mp.serverside.domain;
 
-import java.util.Collection;
 import java.util.Date;
 
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
@@ -15,6 +14,6 @@ public interface Feature {
 
 	Date getValidTo();
 
-	Collection<TaggedKey> getKeys();
+	TaggedKey getKey();
 
 }

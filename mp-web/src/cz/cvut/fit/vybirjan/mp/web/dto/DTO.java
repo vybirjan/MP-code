@@ -21,4 +21,8 @@ public class DTO {
 		return s == null ? NONE : s;
 	}
 
+	public static boolean isNullOrEmpty(String str) {
+		return str == null || str.trim().isEmpty();
+	}
+
 }

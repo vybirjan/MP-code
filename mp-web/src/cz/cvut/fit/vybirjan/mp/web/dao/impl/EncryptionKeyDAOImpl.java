@@ -1,9 +1,15 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.inject.Inject;
 
 import cz.cvut.fit.vybirjan.mp.web.dao.EncryptionKeyDAO;
@@ -24,7 +30,7 @@ public class EncryptionKeyDAOImpl implements EncryptionKeyDAO {
 		try {
 			Query q = pm.newQuery(EncryptionKeyJDO.class);
 			q.setFilter("appId == appIdParam");
-			q.declareParameters("String appId");
+			q.declareParameters("String appIdParam");
 			q.setUnique(true);
 			return (EncryptionKeyJDO) q.execute(id);
 		} finally {
@@ -46,8 +52,35 @@ public class EncryptionKeyDAOImpl implements EncryptionKeyDAO {
 	public void delete(EncryptionKeyJDO key) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		try {
-			key = pm.makePersistent(key);
-			pm.deletePersistent(key);
+			Query q = pm.newQuery(EncryptionKeyJDO.class);
+			q.setFilter("id == idParam");
+			q.declareParameters(Key.class.getName() + " idParam");
+			q.deletePersistentAll(key.getId());
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public List<EncryptionKeyJDO> findAll() {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			Query q = pm.newQuery(EncryptionKeyJDO.class);
+			q.setOrdering("appId desc");
+			return new ArrayList<EncryptionKeyJDO>((List<EncryptionKeyJDO>) q.execute());
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public EncryptionKeyJDO findById(long id) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			Key k = KeyFactory.createKey(EncryptionKeyJDO.class.getSimpleName(), id);
+			return pm.getObjectById(EncryptionKeyJDO.class, k);
+		} catch (JDOObjectNotFoundException e) {
+			return null;
 		} finally {
 			pm.close();
 		}

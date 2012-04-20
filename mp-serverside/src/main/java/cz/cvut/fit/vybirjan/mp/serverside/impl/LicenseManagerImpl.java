@@ -11,7 +11,6 @@ import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseInformation;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseRequest;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
-import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 import cz.cvut.fit.vybirjan.mp.serverside.core.DataSource;
 import cz.cvut.fit.vybirjan.mp.serverside.core.LicenseEventHandler;
 import cz.cvut.fit.vybirjan.mp.serverside.core.LicenseManager;
@@ -142,8 +141,8 @@ public class LicenseManagerImpl implements LicenseManager {
 						Utils.max(f.getValidFrom(), l.getValidFrom()),
 						Utils.min(f.getValidFrom(), f.getValidTo())));
 
-				for (TaggedKey key : f.getKeys()) {
-					info.addKey(key);
+				if (f.getKey() != null) {
+					info.addKey(f.getKey());
 				}
 			}
 		}

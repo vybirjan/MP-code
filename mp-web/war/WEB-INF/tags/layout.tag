@@ -2,6 +2,9 @@
 <%@ attribute name="navButton" type="java.lang.String"
 	rtexprvalue="true" required="true"
 	description="Selected button in navigation menu"%>
+	<%@ attribute name="onLoad" type="java.lang.String"
+	rtexprvalue="true" required="false"
+	description="Selected button in navigation menu"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <!DOCTYPE html>
@@ -30,7 +33,7 @@ body {
     <![endif]-->
 </head>
 
-<body>
+<body <c:if test="${onLoad != null}">onLoad="${onLoad}"</c:if>>
 	<!-- MENU -->
 	<div class="navbar navbar-fixed-top">
 		<div class="navbar-inner">
@@ -59,6 +62,7 @@ body {
 						<li<c:if test="${navButton=='overview'}"> class="active"</c:if>><a
 							href="/web/index">Overview</a></li>
 						<li<c:if test="${navButton=='licenses'}"> class="active"</c:if>><a href="/web/licenses">Issued licenses</a></li>
+						<li<c:if test="${navButton=='features'}"> class="active"</c:if>><a href="/web/features">Features</a></li>
 						<li<c:if test="${navButton=='keys'}"> class="active"</c:if>><a href="/web/keys">Encryption keys</a></li>
 					</ul>
 				</div>
@@ -84,7 +88,8 @@ body {
 	<!-- Le javascript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="/js/bootstrap.min.js"></script>
+	<script src="/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+	<script src="/js/bootstrap.min.js" type="text/javascript"></script>
 </body>
 </html>
 

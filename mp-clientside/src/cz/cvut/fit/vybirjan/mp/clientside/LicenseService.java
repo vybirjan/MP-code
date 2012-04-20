@@ -1,7 +1,6 @@
 package cz.cvut.fit.vybirjan.mp.clientside;
 
 import java.io.IOException;
-import java.security.Key;
 
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseCheckException.LicenseCheckErrorType;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.client.RESTServiceClient;
@@ -31,6 +30,16 @@ public class LicenseService {
 
 	}
 
+	public static void configure(LicenseServiceConfig config) {
+		if (config == null) {
+			LicenseService.config = config;
+		} else {
+			throw new IllegalStateException("Service already configured");
+		}
+	}
+
+	private static LicenseServiceConfig config;
+
 	/**
 	 * Returns instance of service
 	 * 
@@ -41,8 +50,13 @@ public class LicenseService {
 	}
 
 	private static LicenseService createInstance() {
-		return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient("testapp", "localhost:8888/license/", false),
-				HardwareFingerprintProviderFactory.getProvider());
+		if (config == null) {
+			throw new IllegalStateException("Service not configured");
+		} else {
+			return new LicenseService(new EquinoxSecureStorage(), new RESTServiceClient(config.getApplicationId(), config.getServiceBaseurl(),
+					config.isUseEncryption()),
+					HardwareFingerprintProviderFactory.getProvider());
+		}
 	}
 
 	public LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {
@@ -209,7 +223,7 @@ public class LicenseService {
 	}
 
 	private LicenseInformation checkLicense(LicenseInformation license) throws LicenseCheckException {
-		if (!license.isSigned() || !license.verify(getKey())) {
+		if (!license.isSigned() || !license.verify(config.getEncryptionKey())) {
 			throw new LicenseCheckException(LicenseCheckErrorType.INVALID);
 		}
 
@@ -228,14 +242,4 @@ public class LicenseService {
 
 		return license;
 	}
-
-	static Key k = Utils
-			.deserialize(
-					Utils.decode("rO0ABXNyABRqYXZhLnNlY3VyaXR5LktleVJlcL35T7OImqVDAgAETAAJYWxnb3JpdGhtdAASTGphdmEvbGFuZy9TdHJpbmc7WwAHZW5jb2RlZHQAAltCTAAGZm9ybWF0cQB+AAFMAAR0eXBldAAbTGphdmEvc2VjdXJpdHkvS2V5UmVwJFR5cGU7eHB0AANSU0F1cgACW0Ks8xf4BghU4AIAAHhwAAAAojCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAmNsTaNbGZtc0UAtN8q73uW2Bpn7Zfqq/IsxEyexCVj/RvMGKuKIG+ysoyYRXnNV1xga19AZxdmYycCbRzp25TxvY6waUJdg9fdkY2ChTHXWvwzQzKHKTTMTJEBV9QFJ3udBY++BXojcB+U4/RRK0wz12AsaYSqiwWa0cSULWH50CAwEAAXQABVguNTA5fnIAGWphdmEuc2VjdXJpdHkuS2V5UmVwJFR5cGUAAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcuRW51bQAAAAAAAAAAEgAAeHB0AAZQVUJMSUM="),
-					Key.class);
-
-	private Key getKey() {
-		return k;
-	}
-
 }

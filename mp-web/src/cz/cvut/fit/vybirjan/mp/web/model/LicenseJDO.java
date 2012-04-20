@@ -41,7 +41,7 @@ public class LicenseJDO implements License {
 	@Persistent(mappedBy = "license")
 	private List<ActivationJDO> activations;
 	@Persistent(mappedBy = "license", defaultFetchGroup = "true")
-	private List<FeatureJDO> features;
+	private List<AssignedFeatureJDO> features;
 
 	@Override
 	public boolean isActive() {
@@ -107,7 +107,7 @@ public class LicenseJDO implements License {
 		}
 	}
 
-	public List<FeatureJDO> getFeatures() {
+	public List<AssignedFeatureJDO> getFeatures() {
 		if (features == null) {
 			return Collections.emptyList();
 		} else {
@@ -115,16 +115,16 @@ public class LicenseJDO implements License {
 		}
 	}
 
-	public void addFeature(FeatureJDO f) {
+	public void addFeature(AssignedFeatureJDO f) {
 		if (features == null) {
-			features = new LinkedList<FeatureJDO>();
+			features = new LinkedList<AssignedFeatureJDO>();
 		}
 
 		features.add(f);
 		f.setLicense(this);
 	}
 
-	public void removeFeature(FeatureJDO f) {
+	public void removeFeature(AssignedFeatureJDO f) {
 		if (features != null) {
 			if (features.remove(f)) {
 				f.setLicense(null);
@@ -146,13 +146,13 @@ public class LicenseJDO implements License {
 		}
 	}
 
-	public List<FeatureJDO> removeAllFeatures() {
+	public List<AssignedFeatureJDO> removeAllFeatures() {
 		if (features == null) {
 			return Collections.emptyList();
 		} else {
-			List<FeatureJDO> ret = new ArrayList<FeatureJDO>(features);
+			List<AssignedFeatureJDO> ret = new ArrayList<AssignedFeatureJDO>(features);
 
-			for (FeatureJDO feature : ret) {
+			for (AssignedFeatureJDO feature : ret) {
 				removeFeature(feature);
 			}
 

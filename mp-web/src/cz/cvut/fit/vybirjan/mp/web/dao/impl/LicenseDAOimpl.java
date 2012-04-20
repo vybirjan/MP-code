@@ -14,6 +14,8 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.inject.Inject;
 
 import cz.cvut.fit.vybirjan.mp.web.dao.LicenseDAO;
+import cz.cvut.fit.vybirjan.mp.web.model.ActivationJDO;
+import cz.cvut.fit.vybirjan.mp.web.model.AssignedFeatureJDO;
 import cz.cvut.fit.vybirjan.mp.web.model.LicenseJDO;
 
 public class LicenseDAOimpl implements LicenseDAO {
@@ -91,10 +93,21 @@ public class LicenseDAOimpl implements LicenseDAO {
 	public void delete(LicenseJDO lic) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		try {
-			lic = pm.makePersistent(lic);
-			pm.deletePersistentAll(lic.removeAllActivations());
-			pm.deletePersistentAll(lic.removeAllFeatures());
-			pm.deletePersistent(lic);
+			Query deleteActivations = pm.newQuery(ActivationJDO.class);
+			deleteActivations.setFilter("license == licenseParam");
+			deleteActivations.declareParameters(Key.class.getName() + " licenseParam");
+
+			Query deleteFeatures = pm.newQuery(AssignedFeatureJDO.class);
+			deleteFeatures.setFilter("license == licenseParam");
+			deleteFeatures.declareParameters(Key.class.getName() + " licenseParam");
+
+			Query deleteLicense = pm.newQuery(LicenseJDO.class);
+			deleteLicense.setFilter("id == idParam");
+			deleteLicense.declareParameters(Key.class.getName() + " idParam");
+
+			deleteActivations.deletePersistentAll(lic.getId());
+			deleteFeatures.deletePersistentAll(lic.getId());
+			deleteLicense.deletePersistentAll(lic.getId());
 		} finally {
 			pm.close();
 		}
