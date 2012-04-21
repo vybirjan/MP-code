@@ -83,7 +83,12 @@ public class LicenseDAOimpl implements LicenseDAO {
 	public LicenseJDO persist(LicenseJDO jdo) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		try {
-			return pm.makePersistent(jdo);
+			LicenseJDO license = pm.makePersistent(jdo);
+			// also persist features
+			for (AssignedFeatureJDO feature : license.getFeatures()) {
+				pm.makePersistent(feature);
+			}
+			return license;
 		} finally {
 			pm.close();
 		}

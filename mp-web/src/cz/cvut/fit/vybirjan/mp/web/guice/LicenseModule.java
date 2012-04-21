@@ -13,10 +13,12 @@ import cz.cvut.fit.vybirjan.mp.serverside.core.DataSource;
 import cz.cvut.fit.vybirjan.mp.serverside.core.ResponseKeyProvider;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.EntityFactory;
 import cz.cvut.fit.vybirjan.mp.web.dao.ActivationDAO;
+import cz.cvut.fit.vybirjan.mp.web.dao.AssignedFeatureDAO;
 import cz.cvut.fit.vybirjan.mp.web.dao.EncryptionKeyDAO;
 import cz.cvut.fit.vybirjan.mp.web.dao.FeatureDAO;
 import cz.cvut.fit.vybirjan.mp.web.dao.LicenseDAO;
 import cz.cvut.fit.vybirjan.mp.web.dao.impl.ActivationDAOImpl;
+import cz.cvut.fit.vybirjan.mp.web.dao.impl.AssignedFeatureDAOimpl;
 import cz.cvut.fit.vybirjan.mp.web.dao.impl.EncryptionKeyDAOImpl;
 import cz.cvut.fit.vybirjan.mp.web.dao.impl.FeatureDAOImpl;
 import cz.cvut.fit.vybirjan.mp.web.dao.impl.LicenseDAOimpl;
@@ -42,6 +44,7 @@ public class LicenseModule extends ServletModule {
 		bind(ActivationDAO.class).to(ActivationDAOImpl.class);
 		bind(EncryptionKeyDAO.class).to(EncryptionKeyDAOImpl.class);
 		bind(FeatureDAO.class).to(FeatureDAOImpl.class);
+		bind(AssignedFeatureDAO.class).to(AssignedFeatureDAOimpl.class);
 
 		// inject data to factory
 		requestStaticInjection(LicenseManagerFactory.class);

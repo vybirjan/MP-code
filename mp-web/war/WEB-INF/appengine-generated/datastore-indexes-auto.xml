@@ -1,10 +1,15 @@
-<!-- Indices written at Fri, 20 Apr 2012 20:44:02 UTC -->
+<!-- Indices written at Sat, 21 Apr 2012 17:07:10 UTC -->
 
 <datastore-indexes>
 
-    <!-- Used 7 times in query history -->
+    <!-- Used 15 times in query history -->
     <datastore-index kind="AssignedFeatureJDO" ancestor="true" source="auto">
         <property name="features_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="ActivationJDO" ancestor="true" source="auto">
+        <property name="activations_INTEGER_IDX" direction="asc"/>
     </datastore-index>
 
 </datastore-indexes>

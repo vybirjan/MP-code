@@ -2,8 +2,12 @@ package cz.cvut.fit.vybirjan.mp.web.model;
 
 import java.util.Date;
 
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
+
+import com.google.appengine.api.datastore.Key;
 
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Feature;
@@ -19,6 +23,9 @@ public class AssignedFeatureJDO implements Feature {
 
 	}
 
+	@PrimaryKey
+	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+	private Key id;
 	@Persistent(defaultFetchGroup = "true")
 	private FeatureJDO feature;
 	@Persistent(defaultFetchGroup = "true")
@@ -59,5 +66,21 @@ public class AssignedFeatureJDO implements Feature {
 
 	public LicenseJDO getLicense() {
 		return license;
+	}
+
+	public FeatureJDO getFeature() {
+		return feature;
+	}
+
+	public void setValidFrom(Date validFrom) {
+		this.validFrom = validFrom;
+	}
+
+	public void setValidTo(Date validTo) {
+		this.validTo = validTo;
+	}
+
+	public Key getId() {
+		return id;
 	}
 }

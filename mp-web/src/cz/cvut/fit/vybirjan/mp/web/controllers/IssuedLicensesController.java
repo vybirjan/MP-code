@@ -4,6 +4,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
@@ -21,10 +24,14 @@ import com.google.inject.Inject;
 import com.sun.jersey.api.view.Viewable;
 
 import cz.cvut.fit.vybirjan.mp.common.Utils;
+import cz.cvut.fit.vybirjan.mp.web.dao.AssignedFeatureDAO;
+import cz.cvut.fit.vybirjan.mp.web.dao.FeatureDAO;
 import cz.cvut.fit.vybirjan.mp.web.dao.LicenseDAO;
 import cz.cvut.fit.vybirjan.mp.web.dto.DTO;
 import cz.cvut.fit.vybirjan.mp.web.dto.IssuedLicensesDTO;
 import cz.cvut.fit.vybirjan.mp.web.dto.LicenseEditDTO;
+import cz.cvut.fit.vybirjan.mp.web.model.AssignedFeatureJDO;
+import cz.cvut.fit.vybirjan.mp.web.model.FeatureJDO;
 import cz.cvut.fit.vybirjan.mp.web.model.LicenseJDO;
 
 @Produces("text/html")
@@ -32,11 +39,15 @@ import cz.cvut.fit.vybirjan.mp.web.model.LicenseJDO;
 public class IssuedLicensesController {
 
 	@Inject
-	public IssuedLicensesController(LicenseDAO licDao) {
+	public IssuedLicensesController(LicenseDAO licDao, FeatureDAO feDao, AssignedFeatureDAO assfDao) {
 		this.licDao = licDao;
+		this.feDao = feDao;
+		this.assfDao = assfDao;
 	}
 
 	private final LicenseDAO licDao;
+	private final FeatureDAO feDao;
+	private final AssignedFeatureDAO assfDao;
 
 	@GET
 	public Response getLicenses(@QueryParam("createOk") String createOk,
@@ -74,10 +85,63 @@ public class IssuedLicensesController {
 
 		if (l != null) {
 			LicenseEditDTO dto = new LicenseEditDTO(l);
+			dto.addFeatureItems(feDao.findAll());
 			return Response.ok(new Viewable("/license-form", dto)).build();
 		} else {
 			return Response.status(Status.NOT_FOUND).build();
 		}
+	}
+
+	private void updateLicense(LicenseJDO license, List<Long> features, List<String> dateFrom, List<String> dateTo) {
+		List<AssignedFeatureJDO> toCreate = new LinkedList<AssignedFeatureJDO>();
+		List<AssignedFeatureJDO> toDelete = new LinkedList<AssignedFeatureJDO>();
+
+		Iterator<Long> idIt = features.iterator();
+		Iterator<String> fromIt = dateFrom.iterator();
+		Iterator<String> toIt = dateTo.iterator();
+		// add/edit existing
+		while (idIt.hasNext()) {
+			Long id = idIt.next();
+			String from = fromIt.next();
+			String to = toIt.next();
+
+			FeatureJDO feature = feDao.findById(id);
+			if (feature != null) {
+				AssignedFeatureJDO existing = license.findForFeatureId(id);
+
+				if (existing == null) {
+					existing = new AssignedFeatureJDO(feature);
+					toCreate.add(existing);
+				}
+				try {
+					existing.setValidFrom(DTO.parseDate(from));
+					existing.setValidTo(DTO.parseDate(to));
+					if (existing.getValidFrom() != null && existing.getValidTo() != null && existing.getValidFrom().after(existing.getValidTo())) {
+						existing.setValidFrom(null);
+					}
+				} catch (ParseException e) {
+				}
+			}
+		}
+
+		// delete missing
+		for (AssignedFeatureJDO assignedFeature : license.getFeatures()) {
+			if (!features.contains(assignedFeature.getFeature().getId().getId())) {
+				toDelete.add(assignedFeature);
+			}
+		}
+
+		// delete
+		for (AssignedFeatureJDO delete : toDelete) {
+			assfDao.delete(delete);
+			license.removeFeature(delete);
+		}
+
+		// add
+		for (AssignedFeatureJDO create : toCreate) {
+			license.addFeature(create);
+		}
+
 	}
 
 	@POST
@@ -88,16 +152,26 @@ public class IssuedLicensesController {
 			@FormParam("active") String active,
 			@FormParam("description") String description,
 			@FormParam("numOfActivations") String numOfActivations,
-			@FormParam("allowActivations") String allowActivations) throws URISyntaxException {
+			@FormParam("allowActivations") String allowActivations,
+			@FormParam("validFrom") String validFrom,
+			@FormParam("validTo") String validTo,
+			@FormParam("featureId[]") List<Long> featuresIds,
+			@FormParam("featureValidFrom[]") List<String> featureValidFrom,
+			@FormParam("featureValidTo[]") List<String> featureValidTo) throws URISyntaxException {
 		LicenseJDO l = licDao.findById(id);
-
+		LicenseEditDTO dto = new LicenseEditDTO(id, number, active != null, allowActivations != null, description, numOfActivations, validFrom, validTo);
+		dto.addFeatureItems(feDao.findAll());
+		dto.addAssignedFeatures(l.getFeatures());
 		if (l != null) {
+
+			updateLicense(l, featuresIds, featureValidFrom, featureValidTo);
+
 			/*
 			 * Update license number
 			 */
 			if (DTO.isNullOrEmpty(number)) {
 				// error empty number
-				LicenseEditDTO dto = new LicenseEditDTO(id, number, active != null, allowActivations != null, description, numOfActivations);
+
 				dto.setNumberError("License number must not be empty");
 				return Response.ok(new Viewable("/license-form", dto)).build();
 
@@ -106,7 +180,6 @@ public class IssuedLicensesController {
 					LicenseJDO byNumber = licDao.findByNumber(number);
 					if (byNumber != null && !byNumber.getId().equals(l)) {
 						// error number taken
-						LicenseEditDTO dto = new LicenseEditDTO(id, number, active != null, allowActivations != null, description, numOfActivations);
 						dto.setNumberError("License with given number already exists");
 						return Response.ok(new Viewable("/license-form", dto)).build();
 					} else {
@@ -118,6 +191,40 @@ public class IssuedLicensesController {
 			 * Update description
 			 */
 			l.setDescription(description == null ? "" : description);
+			/*
+			 * Update valid from date
+			 */
+			if (DTO.isNullOrEmpty(validFrom)) {
+				l.setValidFrom(null);
+			} else {
+				try {
+					l.setValidFrom(DTO.parseDate(validFrom));
+				} catch (ParseException e) {
+					dto.setValidFromError("Invalid date format");
+					return Response.ok(new Viewable("/license-form", dto)).build();
+				}
+			}
+
+			/*
+			 * Update valid to date
+			 */
+			if (DTO.isNullOrEmpty(validTo)) {
+				l.setValidTo(null);
+			} else {
+				try {
+					l.setValidTo(DTO.parseDate(validTo));
+				} catch (ParseException e) {
+					dto.setValidToError("Invalid date format");
+					return Response.ok(new Viewable("/license-form", dto)).build();
+				}
+			}
+
+			if (l.getValidFrom() != null && l.getValidTo() != null && l.getValidFrom().after(l.getValidTo())) {
+				dto.setValidFromError("Valid from date must be before valid to date");
+				dto.setValidToError("Valid to date must be after valid from date");
+				return Response.ok(new Viewable("/license-form", dto)).build();
+			}
+
 			/*
 			 * Update Active state
 			 */
@@ -136,7 +243,6 @@ public class IssuedLicensesController {
 					l.setMaxActivation(Integer.parseInt(numOfActivations));
 				} catch (NumberFormatException e) {
 					// error invalid number
-					LicenseEditDTO dto = new LicenseEditDTO(id, number, active != null, allowActivations != null, description, numOfActivations);
 					dto.setMaxActivationsError("Invalid numeric value");
 					return Response.ok(new Viewable("/license-form", dto)).build();
 				}
@@ -174,19 +280,24 @@ public class IssuedLicensesController {
 			@FormParam("active") String active,
 			@FormParam("description") String description,
 			@FormParam("numOfActivations") String numOfActivations,
-			@FormParam("allowActivations") String allowActivations) throws URISyntaxException {
+			@FormParam("allowActivations") String allowActivations,
+			@FormParam("validFrom") String validFrom,
+			@FormParam("validTo") String validTo,
+			@FormParam("featureId[]") List<Long> featuresIds,
+			@FormParam("featureValidFrom[]") List<String> featureValidFrom,
+			@FormParam("featureValidTo[]") List<String> featureValidTo) throws URISyntaxException {
 
 		LicenseJDO newLicense = new LicenseJDO();
-
+		LicenseEditDTO dto = new LicenseEditDTO(null, number, active != null, allowActivations != null, description, numOfActivations, validFrom, validTo);
+		dto.addFeatureItems(feDao.findAll());
+		updateLicense(newLicense, featuresIds, featureValidFrom, featureValidTo);
 		// validate number
 		if (DTO.isNullOrEmpty(number)) {
-			LicenseEditDTO dto = new LicenseEditDTO(null, number, active != null, allowActivations != null, description, numOfActivations);
 			dto.setNumberError("Number must not be empty");
 			return Response.ok(new Viewable("/license-form", dto)).build();
 		} else {
 			LicenseJDO existing = licDao.findByNumber(number);
 			if (existing != null) {
-				LicenseEditDTO dto = new LicenseEditDTO(null, number, active != null, allowActivations != null, description, numOfActivations);
 				dto.setNumberError("License with given number already exists");
 				return Response.ok(new Viewable("/license-form", dto)).build();
 			} else {
@@ -199,10 +310,43 @@ public class IssuedLicensesController {
 			try {
 				newLicense.setMaxActivation(Integer.parseInt(numOfActivations));
 			} catch (NumberFormatException e) {
-				LicenseEditDTO dto = new LicenseEditDTO(null, number, active != null, allowActivations != null, description, numOfActivations);
 				dto.setMaxActivationsError("Invalid numeric value");
 				return Response.ok(new Viewable("/license-form", dto)).build();
 			}
+		}
+
+		/*
+		 * Update valid from date
+		 */
+		if (DTO.isNullOrEmpty(validFrom)) {
+			newLicense.setValidFrom(null);
+		} else {
+			try {
+				newLicense.setValidFrom(DTO.parseDate(validFrom));
+			} catch (ParseException e) {
+				dto.setValidFromError("Invalid date format");
+				return Response.ok(new Viewable("/license-form", dto)).build();
+			}
+		}
+
+		/*
+		 * Update valid to date
+		 */
+		if (DTO.isNullOrEmpty(validTo)) {
+			newLicense.setValidTo(null);
+		} else {
+			try {
+				newLicense.setValidTo(DTO.parseDate(validTo));
+			} catch (ParseException e) {
+				dto.setValidToError("Invalid date format");
+				return Response.ok(new Viewable("/license-form", dto)).build();
+			}
+		}
+
+		if (newLicense.getValidFrom() != null && newLicense.getValidTo() != null && newLicense.getValidFrom().after(newLicense.getValidTo())) {
+			dto.setValidFromError("Valid from date must be before valid to date");
+			dto.setValidToError("Valid to date must be after valid from date");
+			return Response.ok(new Viewable("/license-form", dto)).build();
 		}
 
 		newLicense.setActive(active != null);

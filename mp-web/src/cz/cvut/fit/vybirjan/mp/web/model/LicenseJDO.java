@@ -200,4 +200,13 @@ public class LicenseJDO implements License {
 		this.dateIssued = dateIssued;
 	}
 
+	public AssignedFeatureJDO findForFeatureId(long id) {
+		for (AssignedFeatureJDO feature : features) {
+			if (feature.getFeature().getId().getId() == id) {
+				return feature;
+			}
+		}
+
+		return null;
+	}
 }
