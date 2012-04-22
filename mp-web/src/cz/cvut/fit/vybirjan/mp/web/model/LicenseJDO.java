@@ -38,7 +38,7 @@ public class LicenseJDO implements License {
 	private Date validTo;
 	@Persistent
 	private Date dateIssued;
-	@Persistent(mappedBy = "license")
+	@Persistent(mappedBy = "license", defaultFetchGroup = "true")
 	private List<ActivationJDO> activations;
 	@Persistent(mappedBy = "license", defaultFetchGroup = "true")
 	private List<AssignedFeatureJDO> features;
@@ -200,10 +200,12 @@ public class LicenseJDO implements License {
 		this.dateIssued = dateIssued;
 	}
 
-	public AssignedFeatureJDO findForFeatureId(long id) {
-		for (AssignedFeatureJDO feature : features) {
-			if (feature.getFeature().getId().getId() == id) {
-				return feature;
+	public AssignedFeatureJDO findByCode(String code) {
+		if (features != null) {
+			for (AssignedFeatureJDO feature : features) {
+				if (feature.getCode().equals(code)) {
+					return feature;
+				}
 			}
 		}
 

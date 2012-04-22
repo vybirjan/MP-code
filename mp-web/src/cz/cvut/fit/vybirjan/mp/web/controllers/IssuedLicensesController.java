@@ -92,22 +92,22 @@ public class IssuedLicensesController {
 		}
 	}
 
-	private void updateLicense(LicenseJDO license, List<Long> features, List<String> dateFrom, List<String> dateTo) {
+	private void updateLicense(LicenseJDO license, List<String> features, List<String> dateFrom, List<String> dateTo) {
 		List<AssignedFeatureJDO> toCreate = new LinkedList<AssignedFeatureJDO>();
 		List<AssignedFeatureJDO> toDelete = new LinkedList<AssignedFeatureJDO>();
 
-		Iterator<Long> idIt = features.iterator();
+		Iterator<String> codeIt = features.iterator();
 		Iterator<String> fromIt = dateFrom.iterator();
 		Iterator<String> toIt = dateTo.iterator();
 		// add/edit existing
-		while (idIt.hasNext()) {
-			Long id = idIt.next();
+		while (codeIt.hasNext()) {
+			String code = codeIt.next();
 			String from = fromIt.next();
 			String to = toIt.next();
 
-			FeatureJDO feature = feDao.findById(id);
+			FeatureJDO feature = feDao.findByCode(code);
 			if (feature != null) {
-				AssignedFeatureJDO existing = license.findForFeatureId(id);
+				AssignedFeatureJDO existing = license.findByCode(code);
 
 				if (existing == null) {
 					existing = new AssignedFeatureJDO(feature);
@@ -126,7 +126,7 @@ public class IssuedLicensesController {
 
 		// delete missing
 		for (AssignedFeatureJDO assignedFeature : license.getFeatures()) {
-			if (!features.contains(assignedFeature.getFeature().getId().getId())) {
+			if (!features.contains(assignedFeature.getCode())) {
 				toDelete.add(assignedFeature);
 			}
 		}
@@ -155,7 +155,7 @@ public class IssuedLicensesController {
 			@FormParam("allowActivations") String allowActivations,
 			@FormParam("validFrom") String validFrom,
 			@FormParam("validTo") String validTo,
-			@FormParam("featureId[]") List<Long> featuresIds,
+			@FormParam("featureId[]") List<String> featuresIds,
 			@FormParam("featureValidFrom[]") List<String> featureValidFrom,
 			@FormParam("featureValidTo[]") List<String> featureValidTo) throws URISyntaxException {
 		LicenseJDO l = licDao.findById(id);
@@ -269,6 +269,7 @@ public class IssuedLicensesController {
 	@Path("new")
 	public Response createNew() {
 		LicenseEditDTO dto = new LicenseEditDTO();
+		dto.addFeatureItems(feDao.findAll());
 		return Response.ok(new Viewable("/license-form", dto)).build();
 	}
 
@@ -283,14 +284,14 @@ public class IssuedLicensesController {
 			@FormParam("allowActivations") String allowActivations,
 			@FormParam("validFrom") String validFrom,
 			@FormParam("validTo") String validTo,
-			@FormParam("featureId[]") List<Long> featuresIds,
+			@FormParam("featureId[]") List<String> featureCodes,
 			@FormParam("featureValidFrom[]") List<String> featureValidFrom,
 			@FormParam("featureValidTo[]") List<String> featureValidTo) throws URISyntaxException {
 
 		LicenseJDO newLicense = new LicenseJDO();
 		LicenseEditDTO dto = new LicenseEditDTO(null, number, active != null, allowActivations != null, description, numOfActivations, validFrom, validTo);
 		dto.addFeatureItems(feDao.findAll());
-		updateLicense(newLicense, featuresIds, featureValidFrom, featureValidTo);
+		updateLicense(newLicense, featureCodes, featureValidFrom, featureValidTo);
 		// validate number
 		if (DTO.isNullOrEmpty(number)) {
 			dto.setNumberError("Number must not be empty");

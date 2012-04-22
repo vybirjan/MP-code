@@ -1,12 +1,12 @@
 package cz.cvut.fit.vybirjan.mp.web.model;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 import cz.cvut.fit.vybirjan.mp.common.crypto.FileEncryptor;
@@ -15,8 +15,16 @@ import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 @PersistenceCapable
 public class FeatureJDO {
 
+	public FeatureJDO(String code) {
+		this.code = code;
+		this.id = KeyFactory.createKey(FeatureJDO.class.getSimpleName(), code);
+	}
+
+	protected FeatureJDO() {
+
+	}
+
 	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 	@Persistent
 	private String code;
@@ -39,10 +47,6 @@ public class FeatureJDO {
 
 	public Key getId() {
 		return id;
-	}
-
-	public void setCode(String code) {
-		this.code = code;
 	}
 
 	public void setTaggedKey(TaggedKey key) {

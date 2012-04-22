@@ -3,11 +3,10 @@ package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
-
-import org.datanucleus.exceptions.NucleusObjectNotFoundException;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -72,7 +71,7 @@ public class LicenseDAOimpl implements LicenseDAO {
 		try {
 			Key k = KeyFactory.createKey(LicenseJDO.class.getSimpleName(), id);
 			return pm.getObjectById(LicenseJDO.class, k);
-		} catch (NucleusObjectNotFoundException e) {
+		} catch (JDOObjectNotFoundException e) {
 			return null;
 		} finally {
 			pm.close();

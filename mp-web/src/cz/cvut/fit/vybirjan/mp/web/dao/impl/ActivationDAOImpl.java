@@ -3,14 +3,16 @@ package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 import java.util.Date;
 import java.util.List;
 
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.inject.Inject;
 
 import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
-import cz.cvut.fit.vybirjan.mp.serverside.domain.Activation;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.License;
 import cz.cvut.fit.vybirjan.mp.web.dao.ActivationDAO;
 import cz.cvut.fit.vybirjan.mp.web.model.ActivationJDO;
@@ -26,7 +28,7 @@ public class ActivationDAOImpl implements ActivationDAO {
 	private final PersistenceManagerFactory pmf;
 
 	@Override
-	public Activation findActiveActivationForLicense(License l, List<HardwareFingerprint> fingerprints) {
+	public ActivationJDO findActiveActivationForLicense(License l, List<HardwareFingerprint> fingerprints) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		try {
 			Query q = pm.newQuery(ActivationJDO.class);
@@ -63,6 +65,42 @@ public class ActivationDAOImpl implements ActivationDAO {
 			q.setUnique(true);
 
 			return (Date) q.execute();
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public ActivationJDO findById(long licenseId, long id) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			return pm.getObjectById(ActivationJDO.class,
+					KeyFactory.createKey(KeyFactory.createKey(LicenseJDO.class.getSimpleName(), licenseId), ActivationJDO.class.getSimpleName(), id));
+		} catch (JDOObjectNotFoundException e) {
+			return null;
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public ActivationJDO persist(ActivationJDO act) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			return pm.makePersistent(act);
+		} finally {
+			pm.close();
+		}
+	}
+
+	@Override
+	public void delete(ActivationJDO act) {
+		PersistenceManager pm = pmf.getPersistenceManager();
+		try {
+			Query q = pm.newQuery(ActivationJDO.class);
+			q.setFilter("id == idParam");
+			q.declareParameters(Key.class.getName() + " idParam");
+			q.deletePersistentAll(act.getId());
 		} finally {
 			pm.close();
 		}

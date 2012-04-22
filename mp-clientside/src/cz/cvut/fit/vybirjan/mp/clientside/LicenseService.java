@@ -31,7 +31,7 @@ public class LicenseService {
 	}
 
 	public static void configure(LicenseServiceConfig config) {
-		if (config == null) {
+		if (LicenseService.config == null) {
 			LicenseService.config = config;
 		} else {
 			throw new IllegalStateException("Service already configured");

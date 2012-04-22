@@ -66,7 +66,7 @@ public class FeaturesController {
 			@FormParam("key") String key,
 			@FormParam("generate") String generate) throws UnsupportedEncodingException, URISyntaxException {
 
-		if (DTO.isNullOrEmpty(code) || DTO.isNullOrEmpty(description) || (DTO.isNullOrEmpty(key) && generate == null)) {
+		if (DTO.isNullOrEmpty(code) || DTO.isNullOrEmpty(description)) {
 			return Response.seeOther(createKeysUri("errorMessage", "Saving failed - all fields must be filled")).build();
 		}
 
@@ -78,7 +78,7 @@ public class FeaturesController {
 		TaggedKey taggedKey = null;
 		if (generate != null) {
 			taggedKey = FileEncryptor.generateDefaultKey(1);// TODO
-		} else {
+		} else if (!DTO.isNullOrEmpty(key)) {
 			try {
 				taggedKey = FileEncryptor.deserializeKey(Utils.decode(key));
 			} catch (Exception e) {
@@ -86,8 +86,7 @@ public class FeaturesController {
 			}
 		}
 
-		feature = new FeatureJDO();
-		feature.setCode(code);
+		feature = new FeatureJDO(code);
 		feature.setDescription(description);
 		feature.setTaggedKey(taggedKey);
 
@@ -98,10 +97,10 @@ public class FeaturesController {
 
 	@GET
 	@Path("delete/{id}")
-	public Response deleteFeature(@PathParam("id") long id) throws UnsupportedEncodingException, URISyntaxException {
-		FeatureJDO feature = dao.findById(id);
+	public Response deleteFeature(@PathParam("id") String code) throws UnsupportedEncodingException, URISyntaxException {
+		FeatureJDO feature = dao.findByCode(code);
 		if (feature == null) {
-			return Response.seeOther(createKeysUri("errorMessage", "Feature " + id + " not found")).build();
+			return Response.seeOther(createKeysUri("errorMessage", "Feature " + code + " not found")).build();
 		} else {
 			dao.delete(feature);
 			return Response.seeOther(createKeysUri("okMessage", "Feature " + feature.getCode() + " deleted successfully")).build();

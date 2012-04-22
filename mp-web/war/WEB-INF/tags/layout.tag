@@ -43,12 +43,7 @@ body {
 					data-target=".nav-collapse"> <span class="icon-bar"></span> <span
 					class="icon-bar"></span> <span class="icon-bar"></span>
 				</a> <a class="brand" href="/web/index">License manager</a>
-				<div class="nav-collapse">
-					<ul class="nav">
-						<li class="active"><a href="/web/index">Home</a></li>
-						<li><a href="/web/about">About</a></li>
-					</ul>
-				</div>
+
 				<!--/.nav-collapse -->
 			</div>
 		</div>

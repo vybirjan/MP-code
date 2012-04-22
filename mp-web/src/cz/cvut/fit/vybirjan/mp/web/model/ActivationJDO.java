@@ -26,7 +26,7 @@ public class ActivationJDO implements Activation {
 	private Date dateCreated;
 	@Persistent
 	private String serializedFingerprints;
-	@Persistent
+	@Persistent(defaultFetchGroup = "true")
 	private LicenseJDO license;
 
 	@Override

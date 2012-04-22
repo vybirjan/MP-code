@@ -71,7 +71,7 @@
 								value="${record.description}" /></td>
 						<td style="word-break: break-all;"><c:out
 								value="${record.key}" /></td>
-						<td><a onclick="onDelete('<c:out value="${record.code}" />', <c:out value="${record.id}" />)"
+						<td><a onclick="onDelete('<c:out value="${record.code}" />')"
 							class="btn btn-danger btn-small"><i
 								class="icon-remove icon-white"></i> Delete</a></td>
 					</tr>
@@ -89,9 +89,9 @@
 			document.getElementById('key').disabled = document.getElementById('key-toggle').checked;
 		}
 
-		function onDelete(code, id) {
-			if (confirm('Do you really want to delete feature ' + code + '?')) {
-				window.location = "/web/features/delete/" + id
+		function onDelete(code) {
+			if (confirm('Do you really want to delete feature ' + code + '? Feature will also be removed from all licenses.')) {
+				window.location = "/web/features/delete/" + code
 			}
 		}
 	</script>

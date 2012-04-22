@@ -8,8 +8,6 @@ public interface FeatureDAO {
 
 	FeatureJDO findByCode(String code);
 
-	FeatureJDO findById(long id);
-
 	List<FeatureJDO> findAll();
 
 	FeatureJDO persist(FeatureJDO feature);

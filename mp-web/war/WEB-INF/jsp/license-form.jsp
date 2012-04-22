@@ -49,9 +49,7 @@
 				<label class="control-label" for="description">Description</label>
 				<div class="controls">
 					<textarea class="span5 input-xlarge" rows="3" id="description"
-						name="description">
-						<c:out value="${it.description}" />
-					</textarea>
+						name="description"><c:out value="${it.description}" /></textarea>
 				</div>
 			</div>
 
@@ -143,8 +141,8 @@
 				<h3>Features</h3>
 				<br /> Add feature: <select name="feature" id="feature-select">
 					<c:forEach items="${it.featureComboItems}" var="comboItem">
-						<option value="<c:out value="${comboItem.id}" />">
-							<c:out value="${comboItem.description}" />
+						<option value="<c:out value="${comboItem.code}" />">
+							<c:out value="${comboItem.code}" /> - <c:out value="${comboItem.description}" />
 						</option>
 					</c:forEach>
 				</select> From:
@@ -179,11 +177,11 @@
 					</thead>
 					<tbody id="tbl-features-body">
 						<c:forEach items="${it.assignedFeatures}" var="feature">
-							<tr id="row-${feature.id}">
-								<td>${feature.id}</td><td><c:out value="${feature.description}" /></td>
+							<tr id="row-${feature.code}">
+								<td>${feature.code}</td><td><c:out value="${feature.description}" /></td>
 								<td>${feature.validFrom}</td><td>${feature.validTo}</td>
-								<td><a class="btn btn-danger pull-right" onclick="deleteRow(${feature.id})"><i class="icon-remove icon-white"></i> Delete</a></td>
-								<input type="hidden" name="featureId[]" value="${feature.id}">
+								<td><a class="btn btn-danger pull-right" onclick="deleteRow('${feature.code}')"><i class="icon-remove icon-white"></i> Delete</a></td>
+								<input type="hidden" name="featureId[]" value="${feature.code}">
 								<input type="hidden" name="featureValidFrom[]" value="${feature.validFrom}">
 								<input type="hidden" name="featureValidTo[]" value="${feature.validTo}">
 							</tr>
@@ -238,14 +236,11 @@
 					+ dateFrom
 					+ '</td><td>'
 					+ dateTo
-					+ '<td><a class="btn btn-danger pull-right" onclick="deleteRow('
+					+ '<td><a class="btn btn-danger pull-right" onclick="deleteRow(\''
 					+ featureId
-					+ ')"><i class="icon-remove icon-white"></i> Delete</a></td><input type="hidden" name="featureId[]" value="'+featureId+'"><input type="hidden" name="featureValidFrom[]" value="'+dateFrom+'"><input type="hidden" name="featureValidTo[]" value="'+dateTo+'">';
+					+ '\')"><i class="icon-remove icon-white"></i> Delete</a></td><input type="hidden" name="featureId[]" value="'+featureId+'"><input type="hidden" name="featureValidFrom[]" value="'+dateFrom+'"><input type="hidden" name="featureValidTo[]" value="'+dateTo+'">';
 
 			tableBody.appendChild(newRow)
-
-			alert('added feature id=' + featureId + ', name=' + featureName
-					+ ', validFrom=' + dateFrom);
 		}
 		function resetFeatureForm() {
 			clearInput('feature-valid-from');

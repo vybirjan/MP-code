@@ -7,8 +7,10 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Key;
 
+import cz.cvut.fit.vybirjan.mp.common.crypto.FileEncryptor;
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Feature;
 
@@ -16,7 +18,12 @@ import cz.cvut.fit.vybirjan.mp.serverside.domain.Feature;
 public class AssignedFeatureJDO implements Feature {
 
 	public AssignedFeatureJDO(FeatureJDO feature) {
-		this.feature = feature;
+		this.code = feature.getCode();
+		this.description = feature.getDescription();
+		TaggedKey key = feature.getKey();
+		if (key != null) {
+			taggedKey = new Blob(FileEncryptor.serializeKey(key));
+		}
 	}
 
 	protected AssignedFeatureJDO() {
@@ -27,22 +34,27 @@ public class AssignedFeatureJDO implements Feature {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 	@Persistent(defaultFetchGroup = "true")
-	private FeatureJDO feature;
-	@Persistent(defaultFetchGroup = "true")
 	private LicenseJDO license;
 	@Persistent
 	private Date validFrom;
 	@Persistent
 	private Date validTo;
+	// fields from feature
+	@Persistent
+	private String code;
+	@Persistent
+	private String description;
+	@Persistent
+	private Blob taggedKey;
 
 	@Override
 	public String getCode() {
-		return feature.getCode();
+		return code;
 	}
 
 	@Override
 	public String getDescription() {
-		return feature.getDescription();
+		return description;
 	}
 
 	@Override
@@ -57,7 +69,7 @@ public class AssignedFeatureJDO implements Feature {
 
 	@Override
 	public TaggedKey getKey() {
-		return feature.getKey();
+		return taggedKey == null ? null : FileEncryptor.deserializeKey(taggedKey.getBytes());
 	}
 
 	void setLicense(LicenseJDO license) {
@@ -66,10 +78,6 @@ public class AssignedFeatureJDO implements Feature {
 
 	public LicenseJDO getLicense() {
 		return license;
-	}
-
-	public FeatureJDO getFeature() {
-		return feature;
 	}
 
 	public void setValidFrom(Date validFrom) {
@@ -83,4 +91,5 @@ public class AssignedFeatureJDO implements Feature {
 	public Key getId() {
 		return id;
 	}
+
 }

@@ -38,17 +38,17 @@ public class LicenseEditDTO {
 
 	public static class FeatureDTO {
 
-		private long id;
+		private String code;
 		private String description;
 		private Date validFrom;
 		private Date validTo;
 
-		public long getId() {
-			return id;
+		public String getCode() {
+			return code;
 		}
 
-		public void setId(long id) {
-			this.id = id;
+		public void setCode(String id) {
+			this.code = id;
 		}
 
 		public String getDescription() {
@@ -102,7 +102,7 @@ public class LicenseEditDTO {
 		for (FeatureJDO f : features) {
 			FeatureDTO item = new FeatureDTO();
 			item.setDescription(f.getDescription());
-			item.setId(f.getId().getId());
+			item.setCode(f.getCode());
 			featureComboItems.add(item);
 		}
 	}
@@ -116,7 +116,7 @@ public class LicenseEditDTO {
 	public void addAssignedFeature(AssignedFeatureJDO f) {
 		FeatureDTO feature = new FeatureDTO();
 		feature.setDescription(f.getDescription());
-		feature.setId(f.getFeature().getId().getId());
+		feature.setCode(f.getCode());
 		feature.setValidFrom(f.getValidFrom());
 		feature.setValidTo(f.getValidTo());
 		assignedFeatures.add(feature);

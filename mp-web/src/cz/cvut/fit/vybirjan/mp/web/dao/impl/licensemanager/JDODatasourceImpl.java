@@ -51,6 +51,7 @@ public class JDODatasourceImpl implements DataSource {
 			license = pm.makePersistent(license);
 			activation = pm.makePersistent(activation);
 			license.addActivation(activation);
+			pm.makePersistent(activation);
 		} finally {
 			pm.close();
 		}
