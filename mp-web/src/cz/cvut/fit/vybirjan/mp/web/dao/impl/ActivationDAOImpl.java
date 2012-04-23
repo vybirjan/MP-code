@@ -87,7 +87,8 @@ public class ActivationDAOImpl implements ActivationDAO {
 	public ActivationJDO persist(ActivationJDO act) {
 		PersistenceManager pm = pmf.getPersistenceManager();
 		try {
-			return pm.makePersistent(act);
+			pm.makePersistent(act.getLicense());
+			return act;
 		} finally {
 			pm.close();
 		}

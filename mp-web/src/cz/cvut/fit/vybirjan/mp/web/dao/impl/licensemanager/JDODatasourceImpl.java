@@ -48,10 +48,8 @@ public class JDODatasourceImpl implements DataSource {
 		LicenseJDO license = (LicenseJDO) lic;
 		ActivationJDO activation = (ActivationJDO) act;
 		try {
-			license = pm.makePersistent(license);
-			activation = pm.makePersistent(activation);
 			license.addActivation(activation);
-			pm.makePersistent(activation);
+			pm.makePersistent(license);
 		} finally {
 			pm.close();
 		}

@@ -14,7 +14,7 @@ public class WebEntityFactory implements EntityFactory {
 	public Activation createActivation(List<HardwareFingerprint> fingerprints) {
 		ActivationJDO ret = new ActivationJDO();
 		ret.setFingerprints(fingerprints);
-		ret.setActive(true);
+		ret.setActive(false);
 		ret.setDateCreated(new Date());
 		return ret;
 	}

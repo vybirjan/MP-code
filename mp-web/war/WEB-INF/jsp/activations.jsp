@@ -22,7 +22,16 @@
 				<c:forEach items="${it.tableItems}" var="item">
 					<tr>
 						<td>${item.dateActivated}</td>
-						<td>${item.active}</td>
+						<td>
+						<c:choose>
+							<c:when test="${item.active}">
+								<span class="label label-success">Active</span>
+							</c:when>
+							<c:otherwise>
+								<span class="label label-important">Inactive</span>
+							</c:otherwise>
+						</c:choose>
+						</td>
 						<td>
 							<c:forEach items="${item.fingerprints}" var="fingerprint">
 								<c:out value="${fingerprint.name}" /> - <c:out value="${fingerprint.value}" /></br>

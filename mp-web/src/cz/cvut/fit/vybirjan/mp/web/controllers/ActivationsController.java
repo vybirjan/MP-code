@@ -63,13 +63,17 @@ public class ActivationsController {
 	@GET
 	@Path("/{licenseId}/toggleactive/{id}")
 	public Response toggleActive(@PathParam("licenseId") long licenseId, @PathParam("id") long id) throws UnsupportedEncodingException, URISyntaxException {
-		ActivationJDO activation = actiDao.findById(licenseId, id);
+		LicenseJDO license = licDao.findById(licenseId);
+		ActivationJDO activation = null;
+		if (license != null) {
+			activation = license.findActivaionById(id);
+		}
 
 		if (activation == null) {
 			return Response.status(Status.NOT_FOUND).build();
 		} else {
 			activation.setActive(!activation.isActive());
-			actiDao.persist(activation);
+			licDao.persist(license);
 			return Response.seeOther(createUri(activation.getLicense().getId().getId(), "okMessage", "Activation status changed successfully")).build();
 		}
 	}

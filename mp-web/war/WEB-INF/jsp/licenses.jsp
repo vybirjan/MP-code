@@ -42,7 +42,15 @@
 					<td><c:out value="${record.description}" /></td>
 					<td><c:out value="${record.dateFrom}" /></td>
 					<td><c:out value="${record.dateTo}" /></td>
-					<td><c:out value="${record.active}" /></td>
+					<td><c:choose>
+							<c:when test="${record.active}">
+								<span class="label label-success">Active</span>
+							</c:when>
+							<c:otherwise>
+								<span class="label label-important">Inactive</span>
+							</c:otherwise>
+						</c:choose>
+					</td>
 					<td>
 						<div class="btn-group pull-right">
 							<a href="/web/activations/${record.id}" class="btn btn-small"><i class="icon-th-list"></i> Show activations</a>

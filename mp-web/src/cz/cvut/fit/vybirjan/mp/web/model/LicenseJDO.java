@@ -211,4 +211,13 @@ public class LicenseJDO implements License {
 
 		return null;
 	}
+
+	public ActivationJDO findActivaionById(long id) {
+		for (ActivationJDO activation : activations) {
+			if (activation.getId().getId() == id) {
+				return activation;
+			}
+		}
+		return null;
+	}
 }

@@ -16,10 +16,10 @@
 			<c:out value="${it.okMessage}" />
 		</div>
 	</c:if>
-	<a id="btn-form-collapse" class="btn btn-mini" data-toggle="collapse" data-target="#form"><i class="icon-resize-vertical"></i>
+	<a id="btn-form-collapse"  class="btn btn-mini" data-toggle="collapse" data-target="#form"><i class="icon-resize-vertical"></i>
 		Toggle form</a>
 		
-		<form id="form" class="form-horizontal collapse in" method="post" target="_self">
+		<form id="form" class="form-horizontal collapse in" method="post" target="_self" style="display: none;">
 		<br/>
 			<fieldset>
 				<legend>Create new feature</legend>
@@ -48,7 +48,7 @@
 					</div>
 				</div>
 				<button type="submit" class="btn btn-success">
-					<i class="icon-plus icon-white"></i> Add new code
+					<i class="icon-plus icon-white"></i> Create feature
 				</button>
 			</fieldset>
 		</form>
@@ -81,8 +81,8 @@
 	</div>
 	<script type="text/javascript">
 		function onLoad() {
-			$(".collapse").collapse()
-// 			$("#btn-form-collapse").collapse('toggle')
+			$(".collapse").collapse();
+			$("#form").show();
 		}
 		
 		function toggleKey() {

@@ -191,7 +191,8 @@
 			</div>
 
 			<div class="form-actions">
-				<button type="submit" class="btn btn-success">
+				<button type="submit" class="btn btn-success btn-large">
+					<i class="icon-ok icon-white"></i>
 					<c:choose>
 						<c:when test="${it.id == null}">
 							Create new license
@@ -226,21 +227,25 @@
 			var dateFrom = document.getElementById('feature-valid-from').value;
 			var dateTo = document.getElementById('feature-valid-to').value;
 
-			var newRow = document.createElement('tr');
-			newRow.id = 'row-' + featureId;
-			newRow.innerHTML = '<td>'
-					+ featureId
-					+ '</td><td>'
-					+ featureName
-					+ '</td><td>'
-					+ dateFrom
-					+ '</td><td>'
-					+ dateTo
-					+ '<td><a class="btn btn-danger pull-right" onclick="deleteRow(\''
-					+ featureId
-					+ '\')"><i class="icon-remove icon-white"></i> Delete</a></td><input type="hidden" name="featureId[]" value="'+featureId+'"><input type="hidden" name="featureValidFrom[]" value="'+dateFrom+'"><input type="hidden" name="featureValidTo[]" value="'+dateTo+'">';
-
-			tableBody.appendChild(newRow)
+			if(document.getElementById('row-' + featureId) != null) {
+				alert('Feature with code ' + featureId + ' is already assigned to license.')
+			} else {
+				var newRow = document.createElement('tr');
+				newRow.id = 'row-' + featureId;
+				newRow.innerHTML = '<td>'
+						+ featureId
+						+ '</td><td>'
+						+ featureName
+						+ '</td><td>'
+						+ dateFrom
+						+ '</td><td>'
+						+ dateTo
+						+ '<td><a class="btn btn-danger pull-right" onclick="deleteRow(\''
+						+ featureId
+						+ '\')"><i class="icon-remove icon-white"></i> Delete</a></td><input type="hidden" name="featureId[]" value="'+featureId+'"><input type="hidden" name="featureValidFrom[]" value="'+dateFrom+'"><input type="hidden" name="featureValidTo[]" value="'+dateTo+'">';
+	
+				tableBody.appendChild(newRow)
+			}
 		}
 		function resetFeatureForm() {
 			clearInput('feature-valid-from');

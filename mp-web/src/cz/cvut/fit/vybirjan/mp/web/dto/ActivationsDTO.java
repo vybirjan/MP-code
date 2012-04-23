@@ -34,8 +34,8 @@ public class ActivationsDTO {
 			this.dateActivated = dateActivated;
 		}
 
-		public String getActive() {
-			return String.valueOf(active);
+		public boolean getActive() {
+			return active;
 		}
 
 		public void setActive(boolean active) {
