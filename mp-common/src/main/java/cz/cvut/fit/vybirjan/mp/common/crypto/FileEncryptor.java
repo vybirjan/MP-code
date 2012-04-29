@@ -1,6 +1,7 @@
 package cz.cvut.fit.vybirjan.mp.common.crypto;
 
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,10 +12,15 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.jar.Attributes.Name;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -33,6 +39,8 @@ import cz.cvut.fit.vybirjan.mp.common.Utils;
  */
 public final class FileEncryptor {
 
+	public static final Name EXCLUDED_CLASSES_MANIFEST_PROP = new Name("Encryption-Exclude");
+
 	public static final String CLASS_SUFFIX = ".class";
 	public static final String DEFAULT_CIPHER = "AES";
 	public static final String DEFAULT_CIPHER_ALGORITHM = DEFAULT_CIPHER + "/CBC/PKCS5Padding";
@@ -40,7 +48,7 @@ public final class FileEncryptor {
 
 	public static final byte HEAD = (byte) 0xEC;
 
-	private static final int BUFFER_SIZE = 1024;
+	private static final int BUFFER_SIZE = 1024 * 1024 * 10; // 10MB
 
 	/**
 	 * Basic interface for processing elements between sources.
@@ -122,6 +130,51 @@ public final class FileEncryptor {
 		}
 	}
 
+	private static List<String> parseExcludedPackages(Manifest m) {
+		String attribs = (String) m.getMainAttributes().get(EXCLUDED_CLASSES_MANIFEST_PROP);
+
+		if (attribs == null) {
+			return Collections.emptyList();
+		}
+
+		String[] attribArr = attribs.split(",");
+		List<String> ret = new ArrayList<String>(attribArr.length);
+
+		for (String s : attribArr) {
+			ret.add(s.trim());
+		}
+
+		return ret;
+	}
+
+	public static final class TaggingDecryptionStrategy<T> implements ProcessStrategy<T> {
+
+		public TaggingDecryptionStrategy(int tag, ProcessStrategy<T> next) {
+			this.tag = tag;
+			this.next = next;
+		}
+
+		private final int tag;
+		private final ProcessStrategy<T> next;
+
+		@Override
+		public void process(T element, InputStream source, OutputStream target) throws IOException {
+			int head = (byte) source.read();
+			if (head != HEAD) {
+				throw new IllegalArgumentException("Element " + element + " does not have valid head - expected " + HEAD + ", read " + head);
+			}
+			byte[] tagData = new byte[4];
+			fillBuffer(tagData, source);
+			int readTag = Utils.toInt(tagData, 0);
+			if (readTag != tag) {
+				throw new IllegalArgumentException("Invalid tag: " + readTag);
+			} else {
+				next.process(element, source, target);
+			}
+		}
+
+	}
+
 	/**
 	 * Wrapper class used to process .class files. Class files are delegated to
 	 * wrapped strategy to process, other files are just copied without
@@ -132,21 +185,38 @@ public final class FileEncryptor {
 	 */
 	public static final class JarEntryClassProcessingStrategy implements ProcessStrategy<JarEntry> {
 
+		public JarEntryClassProcessingStrategy(Manifest manifest, ProcessStrategy<? super JarEntry> delegate) {
+			this.delegate = delegate;
+			this.excludedPatterns = parseExcludedPackages(manifest);
+		}
+
 		public JarEntryClassProcessingStrategy(ProcessStrategy<? super JarEntry> delegate) {
 			this.delegate = delegate;
+			this.excludedPatterns = Collections.emptyList();
 		}
 
 		private final ProcessStrategy<? super JarEntry> delegate;
+		private final List<String> excludedPatterns;
 
 		@Override
 		public void process(JarEntry element, InputStream source, OutputStream target) throws IOException {
-			if (element.getName().toLowerCase().endsWith(CLASS_SUFFIX)) {
+			if (element.getName().toLowerCase().endsWith(CLASS_SUFFIX) && !matchesAny(element, excludedPatterns)) {
 				delegate.process(element, source, target);
 			} else {
 				copyData(source, target);
 			}
 		}
 
+	}
+
+	private static boolean matchesAny(JarEntry entry, Iterable<String> patterns) {
+		for (String str : patterns) {
+			if (Utils.matchesPackagePattern(str, entry)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -238,9 +308,16 @@ public final class FileEncryptor {
 	}
 
 	private static void fillBuffer(byte[] b, InputStream in) throws IOException {
+		int readSoFar = 0;
 		int read = 0;
-		while (read < b.length) {
-			read = in.read(b, read, b.length - read);
+		while (readSoFar < b.length) {
+			read = in.read(b, readSoFar, b.length - readSoFar);
+
+			if (read == -1) {
+				throw new EOFException("Reached end of stream");
+			} else {
+				readSoFar += read;
+			}
 		}
 	}
 
@@ -279,7 +356,6 @@ public final class FileEncryptor {
 			}
 		} finally {
 			out.close();
-
 		}
 	}
 
@@ -299,7 +375,8 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void encryptJarFile(JarFile source, File target, Key key, int tag) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(new TaggindEncryptionStrategy(tag, createDefaultEncryptStrategy(key))));
+		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), new TaggindEncryptionStrategy(tag,
+				createDefaultEncryptStrategy(key))));
 	}
 
 	/**
@@ -318,7 +395,11 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void encryptJarFile(JarFile source, File target, Key key) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(createDefaultEncryptStrategy(key)));
+		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), createDefaultEncryptStrategy(key)));
+	}
+
+	public static void encryptJarFile(JarFile source, File target, TaggedKey key) throws IOException {
+		encryptJarFile(source, target, key, key.getTag());
 	}
 
 	/**
@@ -334,7 +415,12 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void decryptJarFile(JarFile source, File target, Key key) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(createDefaultDecryptStrategy(key)));
+		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), createDefaultDecryptStrategy(key)));
+	}
+
+	public static void decryptJarFile(JarFile source, File target, TaggedKey key) throws IOException {
+		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), new TaggingDecryptionStrategy<Object>(key.getTag(),
+				createDefaultDecryptStrategy(key))));
 	}
 
 	/**

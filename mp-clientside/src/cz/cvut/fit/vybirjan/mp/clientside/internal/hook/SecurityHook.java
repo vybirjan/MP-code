@@ -26,7 +26,7 @@ public class SecurityHook extends BaseClassLoadingHook implements HookConfigurat
 
 	private static final TaggedKey DEFAULT_KEY = FileEncryptor.deserializeKey(Utils.decode("AAAAAAAAAANBRVPKa6fgQr2m+cnt8PwBSpxk"));
 
-	private SecurityHook() {
+	public SecurityHook() {
 		keys.put(0, FileEncryptor.createDefaultDecryptStrategy(DEFAULT_KEY));
 	}
 
@@ -70,6 +70,7 @@ public class SecurityHook extends BaseClassLoadingHook implements HookConfigurat
 	@Override
 	public void addHooks(HookRegistry registry) {
 		registry.addClassLoadingHook(InstanceHolder.INSTANCE);
+		System.out.print("Hook up and running");
 	}
 
 	@Override

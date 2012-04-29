@@ -7,9 +7,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.jar.JarEntry;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -134,7 +137,7 @@ public final class Utils {
 	 *            Starting position in array. Next 4 bytes will be converted to
 	 *            int.
 	 * @return Integer value of data
-	 * @see http
+	 * @see http 
 	 *      ://www.daniweb.com/software-development/java/code/216874/primitive
 	 *      -types-as-byte-arrays
 	 */
@@ -263,5 +266,50 @@ public final class Utils {
 			// should not happen on in-memory stream
 			throw new RuntimeException("Failed to deserialize from inmemory stream", e);
 		}
+	}
+
+	public static boolean matchesPackagePattern(String classPattern, JarEntry entry) {
+		if (classPattern.length() > entry.getName().length()) {
+			return false;
+		}
+		int i = 0;
+		for (; i < classPattern.length(); i++) {
+			char patternChar = classPattern.charAt(i);
+			char entryNameChar = entry.getName().charAt(i);
+
+			switch (patternChar) {
+				case '*':
+					return true;
+				case '.':
+					if (entryNameChar != '/') {
+						return false;
+					}
+					break;
+				default:
+					if (patternChar != entryNameChar) {
+						return false;
+					}
+			}
+		}
+
+		return !(entry.getName().lastIndexOf('/') > i);
+	}
+
+	private static final String[] UNITS = new String[] { "B", "kB", "MB", "GB", "TB" };
+
+	public static String toHumanReadable(long size) {
+		int unitIndex = 0;
+		BigDecimal currentVal = new BigDecimal(size);
+
+		BigDecimal kilo = new BigDecimal(1024);
+
+		while (currentVal.compareTo(kilo) > 0) {
+			unitIndex++;
+			currentVal = currentVal.divide(kilo);
+		}
+
+		DecimalFormat df = new DecimalFormat("#.##");
+		return df.format(currentVal) + " " + UNITS[unitIndex];
+
 	}
 }
