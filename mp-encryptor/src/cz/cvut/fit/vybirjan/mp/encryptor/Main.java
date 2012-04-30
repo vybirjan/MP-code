@@ -1,9 +1,12 @@
 package cz.cvut.fit.vybirjan.mp.encryptor;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipInputStream;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -43,7 +46,7 @@ public class Main {
 	private static File out = null;
 
 	public static void main(String[] args) throws IOException {
-
+		System.in.read();
 		if (args.length == 0) {
 			printHelp();
 			System.exit(0);
@@ -115,10 +118,11 @@ public class Main {
 	private static void processDir(File dir, File targetPath) {
 		long timeSum = 0;
 		long sizeSum = 0;
+		long totalTime = System.currentTimeMillis();
 		int count = 0;
 
 		for (File source : dir.listFiles()) {
-			long time = System.nanoTime();
+			long time = System.currentTimeMillis();
 			sizeSum += source.length();
 
 			if (source.isFile()) {
@@ -129,7 +133,7 @@ public class Main {
 				// File(targetPath, source.getName()));
 			}
 
-			time = System.nanoTime() - time;
+			time = System.currentTimeMillis() - time;
 
 			timeSum += time;
 			count++;
@@ -138,8 +142,10 @@ public class Main {
 		timeSum /= count;
 		sizeSum /= count;
 
-		long average = (sizeSum * 1000000000) / timeSum;
+		long average = (sizeSum * 1000) / timeSum;
+		totalTime = System.currentTimeMillis() - totalTime;
 		System.out.println("Average: " + Utils.toHumanReadable(average) + "/s (" + average + ")");
+		System.out.println("Total time: " + totalTime + "ms");
 	}
 
 	private static File prepareOutputFile(File input, File targetDir) {
@@ -184,63 +190,75 @@ public class Main {
 		}
 	}
 
+	static byte[] readBuffer = new byte[10 * 1024 * 1024];
+	static byte[] writeBuffer = new byte[10 * 1024 * 1024];
+
 	private static void processFile(File in, File out) {
 		System.out.format("Processing file '%s'\n", in.getAbsolutePath());
 		long time = System.nanoTime();
 
-		boolean tmpCreated = false;
-		if (out == null) {
-			try {
-				out = createTempFile(in);
-				tmpCreated = true;
-			} catch (IOException e) {
-				System.err.format("Failed to create temporary file: %s\n", e.getMessage());
-				System.exit(6);
-			}
-		}
-
 		try {
 			if (in.getName().toLowerCase().endsWith(".jar") && !plain) {
-				JarFile inJar = new JarFile(in, false);
+				readBuffer = Utils.ensureSize((int) in.length(), readBuffer);
+				writeBuffer = Utils.ensureSize((int) (in.length() * 2), writeBuffer);
+
+				int readFromFile = Utils.readFully(in, readBuffer);
+				ByteArrayInputStream byteIn = new ByteArrayInputStream(readBuffer, 0, readFromFile);
+				// just to read manifest
+				JarInputStream inJar = new JarInputStream(byteIn, false);
+				Manifest mf = inJar.getManifest();
+				byteIn.reset();
+				ZipInputStream inZip = new ZipInputStream(byteIn);
+
+				int bytesWritten = 0;
+
 				try {
 					if (decrypt) {
-						FileEncryptor.decryptJarFile(inJar, out, key);
+						bytesWritten = FileEncryptor.decryptJarFileInMemory(inZip, mf, writeBuffer, key);
 					} else {
-						FileEncryptor.encryptJarFile(inJar, out, key);
+						bytesWritten = FileEncryptor.encryptJarFileInMemory(inZip, mf, writeBuffer, key);
 					}
 				} finally {
 					inJar.close();
 				}
+				// write either to out file or overwrite source
+				if (out == null) {
+					Utils.writeFully(in, writeBuffer, 0, bytesWritten);
+				} else {
+					Utils.writeFully(out, writeBuffer, 0, bytesWritten);
+				}
 			} else {
+				if (out == null) {
+					out = createTempFile(in);
+				}
+
 				if (decrypt) {
 					FileEncryptor.decryptFile(in, out, key);
 				} else {
 					FileEncryptor.encryptFile(in, out, key);
 				}
+
+				if (!in.delete()) {
+					throw new IOException("Failed to delete source file " + in.getAbsolutePath());
+				}
+
+				if (!out.renameTo(in)) {
+					throw new IOException("Failed to rename tmp file to " + in.getAbsolutePath());
+				}
 			}
 		} catch (IOException e) {
-			out.delete();
+			if (out != null) {
+				out.delete();
+			}
 
-			System.err.format("Error processing file '%s': %s", in.getAbsoluteFile(), e.getMessage());
+			System.err.format("Error processing file '%s': %s", in.getAbsolutePath(), e.getMessage());
 			System.exit(7);
-		}
-
-		if (tmpCreated) {
-			if (!in.delete()) {
-				System.err.format("Failed to delete file '%s'\n", in.getAbsolutePath());
-				System.exit(9);
-			}
-
-			if (!out.renameTo(in)) {
-				System.err.format("Failed to rename file '%s' to '%s'\n", in.getAbsolutePath(), out.getAbsolutePath());
-				System.exit(9);
-			}
 		}
 
 		time = (System.nanoTime() - time) / 1000000;
 		long speed = (in.length() * 1000) / time;
 
-		System.out.format("Finished in %dms\n (%d B/s)", time, speed);
+		System.out.format("Finished in %dms (%d B/s)\n", time, speed);
 	}
 
 	private static String generateKey(int tag) {

@@ -2,6 +2,9 @@ package cz.cvut.fit.vybirjan.mp.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,7 +15,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
 import java.util.Date;
-import java.util.jar.JarEntry;
+import java.util.zip.ZipEntry;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -61,6 +64,17 @@ public final class Utils {
 	public static byte[] hash(byte[] data) {
 		MessageDigest digest = getDigest();
 		return digest.digest(data);
+	}
+
+	/**
+	 * Computes message digest from provided data using default algorithm.
+	 * 
+	 * @return Message digest
+	 */
+	public static byte[] hash(byte[] data, int offset, int length) {
+		MessageDigest digest = getDigest();
+		digest.update(data, offset, length);
+		return digest.digest();
 	}
 
 	/**
@@ -268,7 +282,33 @@ public final class Utils {
 		}
 	}
 
-	public static boolean matchesPackagePattern(String classPattern, JarEntry entry) {
+	/**
+	 * <p>
+	 * Checks whether given jar entry matches package pattern.
+	 * </p>
+	 * 
+	 * <p>
+	 * Package pattern is string in one of these forms:
+	 * </p>
+	 * <ul>
+	 * <li>Package name, e.g. com.test.mypackage - matches only classes in
+	 * package com.test.mypackage</li>
+	 * <li>Fully qualified class name, e.g. com.test.mypackage.MyClass - matches
+	 * only class com.test.mypackage.MyClass</li>
+	 * <li>Package name with wildcard, e.g. com.test.* - matches all classes in
+	 * com.test package and all subpackages</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * </p>
+	 * 
+	 * @param classPattern
+	 *            Pattern to match entry against
+	 * @param entry
+	 *            Jar entry to match
+	 * @return true if entry matches pattern
+	 */
+	public static boolean matchesPackagePattern(String classPattern, ZipEntry entry) {
 		if (classPattern.length() > entry.getName().length()) {
 			return false;
 		}
@@ -297,6 +337,13 @@ public final class Utils {
 
 	private static final String[] UNITS = new String[] { "B", "kB", "MB", "GB", "TB" };
 
+	/**
+	 * Converts value in bytes into human readable form, e.g 520,51 MB
+	 * 
+	 * @param size
+	 *            Size in bytes
+	 * @return Human readable form of size
+	 */
 	public static String toHumanReadable(long size) {
 		int unitIndex = 0;
 		BigDecimal currentVal = new BigDecimal(size);
@@ -311,5 +358,61 @@ public final class Utils {
 		DecimalFormat df = new DecimalFormat("#.##");
 		return df.format(currentVal) + " " + UNITS[unitIndex];
 
+	}
+
+	/**
+	 * Reads content of file into specified buffer.
+	 * 
+	 * @param f
+	 *            file to read
+	 * @param buffer
+	 *            Buffer to fill with data
+	 * @return Number of bytes read or -1 if buffer is too small
+	 */
+	public static int readFully(File f, byte[] buffer) throws IOException {
+		long length = f.length();
+
+		if (buffer.length < length) {
+			return -1;
+		}
+
+		FileInputStream in = new FileInputStream(f);
+		try {
+			int readSoFar = 0;
+			int read = 0;
+			while ((read = in.read(buffer, readSoFar, buffer.length - readSoFar)) != -1 && readSoFar != length) {
+				readSoFar += read;
+			}
+			return readSoFar;
+		} finally {
+			in.close();
+		}
+	}
+
+	public static void writeFully(File f, byte[] buffer, int offset, int length) throws IOException {
+		FileOutputStream out = new FileOutputStream(f);
+		try {
+			out.write(buffer, offset, length);
+		} finally {
+			out.close();
+		}
+	}
+
+	/**
+	 * Ensures that input buffer has specified size.
+	 * 
+	 * @param size
+	 *            Minimal required size
+	 * @param buffer
+	 *            Buffer to check
+	 * @return Byte array of at least required size. Returns provided buffer if
+	 *         its size is sufficent, allocates new byte array otherwise
+	 */
+	public static byte[] ensureSize(int size, byte[] buffer) {
+		if (buffer.length < size) {
+			return new byte[size];
+		} else {
+			return buffer;
+		}
 	}
 }

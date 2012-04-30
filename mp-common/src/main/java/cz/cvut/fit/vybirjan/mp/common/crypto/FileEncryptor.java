@@ -22,6 +22,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.crypto.Cipher;
@@ -48,7 +49,7 @@ public final class FileEncryptor {
 
 	public static final byte HEAD = (byte) 0xEC;
 
-	private static final int BUFFER_SIZE = 1024 * 1024 * 10; // 10MB
+	private static final int BUFFER_SIZE = 1024 * 1024 * 6; // 6MB
 
 	/**
 	 * Basic interface for processing elements between sources.
@@ -104,7 +105,7 @@ public final class FileEncryptor {
 	 * 
 	 * @param <T>
 	 */
-	public static final class TaggindEncryptionStrategy<T> implements ProcessStrategy<T> {
+	public static final class TaggingEncryptionStrategy<T> implements ProcessStrategy<T> {
 
 		/**
 		 * Creates wrapper
@@ -114,7 +115,7 @@ public final class FileEncryptor {
 		 * @param next
 		 *            Strategy delegate used to process data
 		 */
-		public TaggindEncryptionStrategy(int tag, ProcessStrategy<T> next) {
+		public TaggingEncryptionStrategy(int tag, ProcessStrategy<T> next) {
 			this.tag = tag;
 			this.next = next;
 		}
@@ -131,6 +132,10 @@ public final class FileEncryptor {
 	}
 
 	private static List<String> parseExcludedPackages(Manifest m) {
+		if (m == null) {
+			return Collections.emptyList();
+		}
+
 		String attribs = (String) m.getMainAttributes().get(EXCLUDED_CLASSES_MANIFEST_PROP);
 
 		if (attribs == null) {
@@ -163,7 +168,7 @@ public final class FileEncryptor {
 			if (head != HEAD) {
 				throw new IllegalArgumentException("Element " + element + " does not have valid head - expected " + HEAD + ", read " + head);
 			}
-			byte[] tagData = new byte[4];
+			byte[] tagData = INT_BUFFER.get();
 			fillBuffer(tagData, source);
 			int readTag = Utils.toInt(tagData, 0);
 			if (readTag != tag) {
@@ -183,23 +188,23 @@ public final class FileEncryptor {
 	 * @author Jan Vybíral
 	 * 
 	 */
-	public static final class JarEntryClassProcessingStrategy implements ProcessStrategy<JarEntry> {
+	public static final class ZipEntryClassProcessingStrategy implements ProcessStrategy<ZipEntry> {
 
-		public JarEntryClassProcessingStrategy(Manifest manifest, ProcessStrategy<? super JarEntry> delegate) {
+		public ZipEntryClassProcessingStrategy(Manifest manifest, ProcessStrategy<? super ZipEntry> delegate) {
 			this.delegate = delegate;
 			this.excludedPatterns = parseExcludedPackages(manifest);
 		}
 
-		public JarEntryClassProcessingStrategy(ProcessStrategy<? super JarEntry> delegate) {
+		public ZipEntryClassProcessingStrategy(ProcessStrategy<? super ZipEntry> delegate) {
 			this.delegate = delegate;
 			this.excludedPatterns = Collections.emptyList();
 		}
 
-		private final ProcessStrategy<? super JarEntry> delegate;
+		private final ProcessStrategy<? super ZipEntry> delegate;
 		private final List<String> excludedPatterns;
 
 		@Override
-		public void process(JarEntry element, InputStream source, OutputStream target) throws IOException {
+		public void process(ZipEntry element, InputStream source, OutputStream target) throws IOException {
 			if (element.getName().toLowerCase().endsWith(CLASS_SUFFIX) && !matchesAny(element, excludedPatterns)) {
 				delegate.process(element, source, target);
 			} else {
@@ -209,7 +214,7 @@ public final class FileEncryptor {
 
 	}
 
-	private static boolean matchesAny(JarEntry entry, Iterable<String> patterns) {
+	private static boolean matchesAny(ZipEntry entry, Iterable<String> patterns) {
 		for (String str : patterns) {
 			if (Utils.matchesPackagePattern(str, entry)) {
 				return true;
@@ -232,24 +237,23 @@ public final class FileEncryptor {
 		public InitVectorEncryptStrategy(Cipher c, Key key, int initVectorSize) {
 			this.c = c;
 			this.key = key;
-			this.initVectorSize = initVectorSize;
+			this.iv = new byte[initVectorSize];
 		}
 
 		private final Cipher c;
 		private final Key key;
-		private final int initVectorSize;
+		private final byte[] iv;
 
 		@Override
 		public void process(Object element, InputStream source, OutputStream target) throws IOException {
 			SecureRandom rnd = new SecureRandom();
-			byte[] iv = new byte[initVectorSize];
 			rnd.nextBytes(iv);
 
 			target.write(iv);
 
 			try {
 				c.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
-				byte[] buffer = new byte[BUFFER_SIZE];
+				byte[] buffer = COPY_BUFFER.get();
 				int read = 0;
 
 				while ((read = source.read(buffer)) != -1) {
@@ -259,7 +263,7 @@ public final class FileEncryptor {
 				target.write(c.doFinal());
 
 			} catch (GeneralSecurityException e) {
-				throw new IOException("Encryption error", e);
+				throw new IOException("Encryption error: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -277,22 +281,21 @@ public final class FileEncryptor {
 		public InitVectorDecryptStrategy(Cipher c, Key key, int initVectorSize) {
 			this.c = c;
 			this.key = key;
-			this.initVectorSize = initVectorSize;
+			this.iv = new byte[initVectorSize];
 		}
 
 		private final Cipher c;
 		private final Key key;
-		private final int initVectorSize;
+		private final byte[] iv;
 
 		@Override
 		public void process(Object element, InputStream source, OutputStream target) throws IOException {
 
-			byte[] iv = new byte[initVectorSize];
 			fillBuffer(iv, source);
 
 			try {
 				c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
-				byte[] buffer = new byte[BUFFER_SIZE];
+				byte[] buffer = COPY_BUFFER.get();
 				int read = 0;
 
 				while ((read = source.read(buffer)) != -1) {
@@ -302,7 +305,7 @@ public final class FileEncryptor {
 				target.write(c.doFinal());
 
 			} catch (GeneralSecurityException e) {
-				throw new IOException("Encryption error", e);
+				throw new IOException("Encryption error: " + e.getMessage(), e);
 			}
 		}
 	}
@@ -344,7 +347,7 @@ public final class FileEncryptor {
 			while (entries.hasMoreElements()) {
 				entry = entries.nextElement();
 
-				ZipEntry newEntry = new ZipEntry(entry.getName());
+				ZipEntry newEntry = copyEntry(entry);
 				out.putNextEntry(newEntry);
 
 				InputStream in = toProcess.getInputStream(entry);
@@ -357,6 +360,59 @@ public final class FileEncryptor {
 		} finally {
 			out.close();
 		}
+	}
+
+	private static ZipEntry copyEntry(ZipEntry original) {
+		ZipEntry ret = new ZipEntry(original.getName());
+		ret.setTime(original.getTime());
+		ret.setExtra(original.getExtra());
+		ret.setComment(original.getComment());
+
+		return ret;
+	}
+
+	/**
+	 * Processes zip file in memory
+	 * 
+	 * @param in
+	 *            Input stream to read jar entries from
+	 * @param processedJarFile
+	 *            Buffer to place processed jar file to
+	 * @param strategy
+	 *            Strategy to process jar files with
+	 * @return Number of bytes written to provided buffer
+	 * @throws IOException
+	 */
+	public static int processZipInMemory(ZipInputStream in, byte[] processedJarFile, ProcessStrategy<? super ZipEntry> strategy)
+			throws IOException {
+		FixedByteArrayOutputStream out = new FixedByteArrayOutputStream(processedJarFile);
+		ZipOutputStream zipOut = new ZipOutputStream(out);
+		try {
+
+			ZipEntry entry = null;
+			while ((entry = in.getNextEntry()) != null) {
+				ZipEntry e = copyEntry(entry);
+				zipOut.putNextEntry(e);
+
+				strategy.process(entry, in, zipOut);
+
+				zipOut.closeEntry();
+			}
+		} finally {
+			zipOut.close();
+		}
+
+		return out.getBytesWritten();
+	}
+
+	public static int encryptJarFileInMemory(ZipInputStream in, Manifest mf, byte[] outputBuffer, TaggedKey key) throws IOException {
+		return processZipInMemory(in, outputBuffer, new ZipEntryClassProcessingStrategy(mf, new TaggingEncryptionStrategy(key.getTag(),
+				createDefaultEncryptStrategy(key))));
+	}
+
+	public static int decryptJarFileInMemory(ZipInputStream in, Manifest mf, byte[] outputBuffer, TaggedKey key) throws IOException {
+		return processZipInMemory(in, outputBuffer, new ZipEntryClassProcessingStrategy(mf, new TaggingDecryptionStrategy(key.getTag(),
+				createDefaultDecryptStrategy(key))));
 	}
 
 	/**
@@ -375,7 +431,7 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void encryptJarFile(JarFile source, File target, Key key, int tag) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), new TaggindEncryptionStrategy(tag,
+		processJarFile(source, target, new ZipEntryClassProcessingStrategy(source.getManifest(), new TaggingEncryptionStrategy(tag,
 				createDefaultEncryptStrategy(key))));
 	}
 
@@ -395,7 +451,7 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void encryptJarFile(JarFile source, File target, Key key) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), createDefaultEncryptStrategy(key)));
+		processJarFile(source, target, new ZipEntryClassProcessingStrategy(source.getManifest(), createDefaultEncryptStrategy(key)));
 	}
 
 	public static void encryptJarFile(JarFile source, File target, TaggedKey key) throws IOException {
@@ -415,11 +471,11 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void decryptJarFile(JarFile source, File target, Key key) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), createDefaultDecryptStrategy(key)));
+		processJarFile(source, target, new ZipEntryClassProcessingStrategy(source.getManifest(), createDefaultDecryptStrategy(key)));
 	}
 
 	public static void decryptJarFile(JarFile source, File target, TaggedKey key) throws IOException {
-		processJarFile(source, target, new JarEntryClassProcessingStrategy(source.getManifest(), new TaggingDecryptionStrategy<Object>(key.getTag(),
+		processJarFile(source, target, new ZipEntryClassProcessingStrategy(source.getManifest(), new TaggingDecryptionStrategy<Object>(key.getTag(),
 				createDefaultDecryptStrategy(key))));
 	}
 
@@ -484,6 +540,26 @@ public final class FileEncryptor {
 		}
 	}
 
+	/*
+	 * Buffer in thread local to prevent allocation new buffers each time
+	 * copyData method is called
+	 */
+	private static ThreadLocal<byte[]> COPY_BUFFER = new ThreadLocal<byte[]>() {
+		@Override
+		protected byte[] initialValue() {
+			return new byte[BUFFER_SIZE];
+		};
+	};
+	/*
+	 * Buffer to prevent allocation of new buffers for int conversions
+	 */
+	private static ThreadLocal<byte[]> INT_BUFFER = new ThreadLocal<byte[]>() {
+		@Override
+		protected byte[] initialValue() {
+			return new byte[4];
+		};
+	};
+
 	/**
 	 * Helper method which copies data from one stram to another using small
 	 * buffer.
@@ -495,7 +571,7 @@ public final class FileEncryptor {
 	 * @throws IOException
 	 */
 	public static void copyData(InputStream source, OutputStream target) throws IOException {
-		byte[] buffer = new byte[BUFFER_SIZE];
+		byte[] buffer = COPY_BUFFER.get();
 		int read = 0;
 
 		while ((read = source.read(buffer)) != -1) {
@@ -560,4 +636,59 @@ public final class FileEncryptor {
 			throw new AssertionError("Default cipher algorithm " + DEFAULT_CIPHER_ALGORITHM + " not available");
 		}
 	}
+
+	/**
+	 * <p>
+	 * Stream which writes data into provided byte array.
+	 * </p>
+	 * 
+	 * <p>
+	 * Unlike {@link ByteArrayOutputStream} does not allocate new byte array but
+	 * rather uses the one provided with the risk that data may not fit in.
+	 * </p>
+	 * 
+	 * <p>
+	 * It is up to user to ensure provided array is large enough
+	 * </p>
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 */
+	private static class FixedByteArrayOutputStream extends OutputStream {
+
+		public FixedByteArrayOutputStream(byte[] buffer) {
+			this.buffer = buffer;
+		}
+
+		private int currentMark = 0;
+		private final byte[] buffer;
+
+		@Override
+		public void write(int b) throws IOException {
+			buffer[currentMark] = (byte) b;
+			currentMark++;
+		}
+
+		@Override
+		public void write(byte[] b) throws IOException {
+			System.arraycopy(b, 0, buffer, currentMark, b.length);
+			currentMark += b.length;
+		}
+
+		@Override
+		public void write(byte[] b, int off, int len) throws IOException {
+			System.arraycopy(b, off, buffer, currentMark, len);
+			currentMark += len;
+		}
+
+		/**
+		 * Returns number of bytes written by the stream.
+		 * 
+		 * @return
+		 */
+		public int getBytesWritten() {
+			return currentMark;
+		}
+	}
+
 }
