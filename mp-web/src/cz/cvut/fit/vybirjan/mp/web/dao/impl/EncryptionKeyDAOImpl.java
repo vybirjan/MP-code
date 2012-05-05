@@ -1,6 +1,5 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.jdo.JDOObjectNotFoundException;
@@ -67,7 +66,9 @@ public class EncryptionKeyDAOImpl implements EncryptionKeyDAO {
 		try {
 			Query q = pm.newQuery(EncryptionKeyJDO.class);
 			q.setOrdering("appId desc");
-			return new ArrayList<EncryptionKeyJDO>((List<EncryptionKeyJDO>) q.execute());
+			List<EncryptionKeyJDO> ret = (List<EncryptionKeyJDO>) q.execute();
+			ret.size();
+			return ret;
 		} finally {
 			pm.close();
 		}

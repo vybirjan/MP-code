@@ -1,7 +1,9 @@
 package cz.cvut.fit.vybirjan.mp.web.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -15,7 +17,9 @@ import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Feature;
 
 @PersistenceCapable
-public class AssignedFeatureJDO implements Feature {
+public class AssignedFeatureJDO implements Feature, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public AssignedFeatureJDO(FeatureJDO feature) {
 		this.code = feature.getCode();
@@ -36,13 +40,16 @@ public class AssignedFeatureJDO implements Feature {
 	@Persistent(defaultFetchGroup = "true")
 	private LicenseJDO license;
 	@Persistent
+	@Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
 	private Date validFrom;
 	@Persistent
+	@Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
 	private Date validTo;
 	// fields from feature
 	@Persistent
 	private String code;
 	@Persistent
+	@Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
 	private String description;
 	@Persistent
 	private Blob taggedKey;

@@ -1,8 +1,12 @@
 package cz.cvut.fit.vybirjan.mp.serverside.impl.jaxrs;
 
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,11 +15,18 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 
+import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseRequest;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
 import cz.cvut.fit.vybirjan.mp.serverside.core.LicenseManager;
 
 @Path("/activations")
+/**
+ * JAX-RS resource exposing REST API for clients to use to obtain license informaion.
+ * 
+ * @author Jan Vybíral
+ *
+ */
 public class LicenseResource {
 
 	@Context
@@ -32,8 +43,27 @@ public class LicenseResource {
 	}
 
 	@GET
-	public Response getExistingActivation(@Context UriInfo uriInfo, LicenseRequest request) {
-		LicenseResponse response = getLicenseManager().getLicense(request);
+	@Path("/{licenseNumber}/{fingerprints}")
+	public Response getExistingActivation(@Context UriInfo uriInfo,
+			@PathParam("licenseNumber") String licenseNumber,
+			@PathParam("fingerprints") String fingerPrints,
+			@QueryParam("appid") String appId) {
+
+		if (appId == null) {
+			return Response.status(Status.BAD_REQUEST).entity("Missing parameter appid").build();
+		}
+
+		List<HardwareFingerprint> fingerprints = null;
+		try {
+			fingerprints = HardwareFingerprint.fromMultiString(fingerPrints);
+		} catch (Exception e) {
+			return Response.status(Status.BAD_REQUEST).entity("Invalid fingerprints").build();
+		}
+
+		LicenseRequest req = new LicenseRequest(appId, licenseNumber);
+		req.addFingerprints(fingerprints);
+
+		LicenseResponse response = getLicenseManager().getLicense(req);
 
 		return createResponse(uriInfo, response);
 	}

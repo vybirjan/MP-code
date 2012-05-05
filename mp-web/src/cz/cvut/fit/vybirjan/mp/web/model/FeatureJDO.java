@@ -1,5 +1,8 @@
 package cz.cvut.fit.vybirjan.mp.web.model;
 
+import java.io.Serializable;
+
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -13,7 +16,9 @@ import cz.cvut.fit.vybirjan.mp.common.crypto.FileEncryptor;
 import cz.cvut.fit.vybirjan.mp.common.crypto.TaggedKey;
 
 @PersistenceCapable
-public class FeatureJDO {
+public class FeatureJDO implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public FeatureJDO(String code) {
 		this.code = code;
@@ -29,6 +34,7 @@ public class FeatureJDO {
 	@Persistent
 	private String code;
 	@Persistent
+	@Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
 	private String description;
 	@Persistent
 	private Blob taggedKey;

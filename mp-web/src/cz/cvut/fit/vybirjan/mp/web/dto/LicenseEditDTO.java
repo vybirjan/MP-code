@@ -59,16 +59,16 @@ public class LicenseEditDTO {
 			this.description = description;
 		}
 
-		public Date getValidFrom() {
-			return validFrom;
+		public String getValidFrom() {
+			return validFrom == null ? "" : DTO.format(validFrom);
 		}
 
 		public void setValidFrom(Date validFrom) {
 			this.validFrom = validFrom;
 		}
 
-		public Date getValidTo() {
-			return validTo;
+		public String getValidTo() {
+			return validTo == null ? "" : DTO.format(validTo);
 		}
 
 		public void setValidTo(Date validTo) {

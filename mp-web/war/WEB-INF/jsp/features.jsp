@@ -38,7 +38,8 @@
 				<div class="control-group">
 					<label class="control-label" for="generate">Generate key</label>
 					<div class="controls">
-						<input id="key-toggle" type="checkbox" checked="checked" id="generate" name="generate" onclick="toggleKey()"></textarea>
+						<input id="key-toggle" type="checkbox" checked="checked" id="generate" name="generate" onclick="toggleKey()">
+						&nbsp;&nbsp;Key tag: <input name="tag" class="span2" id="key-tag" type="text" onkeypress="return isNumberKey(event)" />
 					</div>
 				</div>
 				<div class="control-group">
@@ -59,6 +60,7 @@
 				<tr>
 					<th>Code</th>
 					<th>Description</th>
+					<th>Key tag</th>
 					<th>Tagged key</th>
 					<th></th>
 				</tr>
@@ -69,6 +71,7 @@
 						<td><c:out value="${record.code}" /></td>
 						<td style="word-break: break-all;"><c:out
 								value="${record.description}" /></td>
+						<td>${record.tag}</td>
 						<td style="word-break: break-all;"><c:out
 								value="${record.key}" /></td>
 						<td><a onclick="onDelete('<c:out value="${record.code}" />')"
@@ -87,6 +90,7 @@
 		
 		function toggleKey() {
 			document.getElementById('key').disabled = document.getElementById('key-toggle').checked;
+			document.getElementById('key-tag').disabled = !document.getElementById('key-toggle').checked;
 		}
 
 		function onDelete(code) {
@@ -94,6 +98,14 @@
 				window.location = "/web/features/delete/" + code
 			}
 		}
+		
+		function isNumberKey(evt) {
+           var charCode = (evt.which) ? evt.which : event.keyCode
+           if (charCode > 31 && (charCode < 48 || charCode > 57))
+              return false;
+
+           return true;
+        }
 	</script>
 	
 </web:layout>

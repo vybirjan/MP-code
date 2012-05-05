@@ -27,7 +27,11 @@ public enum ResponseType {
 	 */
 	ERROR_INACTIVE,
 	/**
-	 * Internal server error ocured when handling requst.
+	 * Requested license was not activated (no activations have been made)
+	 */
+	ERROR_NOT_ACTIVATED,
+	/**
+	 * Internal server error occurred when handling request.
 	 */
 	ERROR_INTERNAL_ERROR,
 	/**
@@ -43,7 +47,7 @@ public enum ResponseType {
 	 */
 	ERROR_EXPIRED,
 	/**
-	 * REquest sent by client is not valid and server refuses to perform it.
+	 * Request sent by client is not valid and server refuses to perform it.
 	 */
 	ERROR_BAD_REQUEST,
 	/**

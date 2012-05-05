@@ -12,6 +12,7 @@ public class FeaturesDTO {
 		private String code;
 		private String description;
 		private String key;
+		private Integer tag;
 
 		public long getId() {
 			return id;
@@ -45,6 +46,14 @@ public class FeaturesDTO {
 			this.key = key;
 		}
 
+		public Integer getTag() {
+			return tag;
+		}
+
+		public void setTag(Integer tag) {
+			this.tag = tag;
+		}
+
 	}
 
 	private String okMessage;
@@ -61,6 +70,7 @@ public class FeaturesDTO {
 		item.setDescription(feature.getDescription());
 		item.setId(feature.getId().getId());
 		item.setKey(feature.getEncodedKey());
+		item.setTag(feature.getKey() != null ? feature.getKey().getTag() : null);
 
 		tableItems.add(item);
 	}

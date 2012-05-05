@@ -1,9 +1,11 @@
 package cz.cvut.fit.vybirjan.mp.web.model;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import javax.jdo.annotations.Extension;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -15,7 +17,9 @@ import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
 import cz.cvut.fit.vybirjan.mp.serverside.domain.Activation;
 
 @PersistenceCapable
-public class ActivationJDO implements Activation {
+public class ActivationJDO implements Activation, Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -23,6 +27,7 @@ public class ActivationJDO implements Activation {
 	@Persistent
 	private boolean active;
 	@Persistent
+	@Extension(vendorName = "datanucleus", key = "gae.unindexed", value = "true")
 	private Date dateCreated;
 	@Persistent
 	private String serializedFingerprints;

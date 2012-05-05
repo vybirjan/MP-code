@@ -1,6 +1,5 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
@@ -43,7 +42,9 @@ public class FeatureDAOImpl implements FeatureDAO {
 		try {
 			Query q = pm.newQuery(FeatureJDO.class);
 			q.setOrdering("code asc");
-			return new ArrayList<FeatureJDO>((List<FeatureJDO>) q.execute());
+			List<FeatureJDO> result = (List<FeatureJDO>) q.execute();
+			result.size();
+			return result;
 		} finally {
 			pm.close();
 		}

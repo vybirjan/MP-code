@@ -87,6 +87,10 @@ public class LicenseResponse implements Serializable {
 		return new LicenseResponse(ResponseType.ERROR_TOO_MANY_ACTIVATIONS, null);
 	}
 
+	public static LicenseResponse notActivated() {
+		return new LicenseResponse(ResponseType.ERROR_NOT_ACTIVATED, null);
+	}
+
 	/**
 	 * Returns true if request was successful and license information can be
 	 * read using {@link #getLicenseInformation()} method.

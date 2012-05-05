@@ -18,13 +18,15 @@ public class MarshallableFeature {
 	public MarshallableFeature() {
 	}
 
-	public MarshallableFeature(String code, Date validFrom, Date validTo) {
+	public MarshallableFeature(String code, String description, Date validFrom, Date validTo) {
 		this.code = code;
+		this.description = description;
 		this.validFrom = validFrom;
 		this.validTo = validTo;
 	}
 
 	public String code;
+	public String description;
 	public Date validFrom;
 	public Date validTo;
 }

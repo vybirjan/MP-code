@@ -99,5 +99,4 @@ public class KeysController {
 		String encoded = URLEncoder.encode(value, Utils.UTF_8);
 		return new URI("/web/keys?" + propName + "=" + encoded);
 	}
-
 }

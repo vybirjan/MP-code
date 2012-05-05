@@ -295,6 +295,7 @@ public final class FileEncryptor {
 
 			try {
 				c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
+
 				byte[] buffer = COPY_BUFFER.get();
 				int read = 0;
 
@@ -308,6 +309,7 @@ public final class FileEncryptor {
 				throw new IOException("Encryption error: " + e.getMessage(), e);
 			}
 		}
+
 	}
 
 	private static void fillBuffer(byte[] b, InputStream in) throws IOException {

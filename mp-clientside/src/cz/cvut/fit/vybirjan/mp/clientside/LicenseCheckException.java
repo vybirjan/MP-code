@@ -20,7 +20,11 @@ public class LicenseCheckException extends Exception {
 		/**
 		 * License is not valid (invalid or missing signature)
 		 */
-		INVALID
+		INVALID,
+		/**
+		 * License contains different fingerprints
+		 */
+		FINGERPRINT_MISMATCH
 	}
 
 	private static final long serialVersionUID = 1L;

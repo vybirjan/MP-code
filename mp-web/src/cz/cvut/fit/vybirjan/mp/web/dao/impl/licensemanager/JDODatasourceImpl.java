@@ -1,5 +1,6 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl.licensemanager;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.jdo.PersistenceManager;
@@ -39,7 +40,15 @@ public class JDODatasourceImpl implements DataSource {
 	@Override
 	public List<? extends Activation> findActiveActivationsForLicense(License l) {
 		LicenseJDO license = (LicenseJDO) l;
-		return license.getActivations();
+		List<ActivationJDO> activations = new LinkedList<ActivationJDO>();
+
+		for (ActivationJDO activation : license.getActivations()) {
+			if (activation.isActive()) {
+				activations.add(activation);
+			}
+		}
+
+		return activations;
 	}
 
 	@Override

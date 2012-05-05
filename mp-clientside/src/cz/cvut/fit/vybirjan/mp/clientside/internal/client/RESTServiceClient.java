@@ -45,7 +45,7 @@ public class RESTServiceClient implements LicenseServiceClient {
 	private static final String HEADER_ACCEPT = "Accept";
 	private static final String HEADER_CONTENT_TYPE = "Content-Type";
 
-	private static final String MIME_TEXT_XML_UTF8 = "text/xml; charset=utf-8";
+	private static final String MIME_APPLICATION_XML_UTF8 = "application/xml; charset=utf-8";
 
 	static {
 		try {
@@ -93,6 +93,10 @@ public class RESTServiceClient implements LicenseServiceClient {
 		}
 	}
 
+	private static void sendRequest(HttpURLConnection connection) throws IOException {
+		connection.connect();
+	}
+
 	private static LicenseResponse readResponse(HttpURLConnection connection) throws IOException {
 		if (connection.getResponseCode() >= HttpURLConnection.HTTP_INTERNAL_ERROR) {
 			return LicenseResponse.internalError();
@@ -117,16 +121,18 @@ public class RESTServiceClient implements LicenseServiceClient {
 		}
 	}
 
-	private HttpURLConnection createConnection(String method) throws IOException {
-		URL url = createUrl(baseUrl, secure);
-
+	private HttpURLConnection createConnection(String method, URL url) throws IOException {
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setDoOutput(true);
 		connection.setRequestMethod(method);
-		connection.addRequestProperty(HEADER_ACCEPT, MIME_TEXT_XML_UTF8);
-		connection.addRequestProperty(HEADER_CONTENT_TYPE, MIME_TEXT_XML_UTF8);
+		connection.addRequestProperty(HEADER_ACCEPT, MIME_APPLICATION_XML_UTF8);
+		connection.addRequestProperty(HEADER_CONTENT_TYPE, MIME_APPLICATION_XML_UTF8);
 
 		return connection;
+	}
+
+	private HttpURLConnection createConnection(String method) throws IOException {
+		return createConnection(method, createUrl(baseUrl, secure));
 	}
 
 	@Override
@@ -134,9 +140,9 @@ public class RESTServiceClient implements LicenseServiceClient {
 		LicenseRequest request = new LicenseRequest(appId, licenseNumber);
 		request.addFingerprints(fingerprints);
 
-		HttpURLConnection connection = createConnection(GET);
+		HttpURLConnection connection = createConnection(GET, createGetLicensesURL(request));
 		try {
-			sendRequest(request, connection);
+			sendRequest(connection);
 			return readResponse(connection);
 		} finally {
 			connection.disconnect();
@@ -155,6 +161,17 @@ public class RESTServiceClient implements LicenseServiceClient {
 			sb.append(PATH_SEPARATOR);
 		}
 		sb.append(ACTIVATIONS_SUFFIX);
+
+		return new URL(sb.toString());
+	}
+
+	private URL createGetLicensesURL(LicenseRequest req) throws MalformedURLException {
+		String url = createUrl(baseUrl, secure).toExternalForm();
+		StringBuilder sb = new StringBuilder();
+		sb.append(url).append(PATH_SEPARATOR);
+		sb.append(Utils.urlEncode(req.getLicenseNumber()));
+		sb.append(PATH_SEPARATOR).append(Utils.urlEncode(HardwareFingerprint.toMultiString(req.getFingerprints())));
+		sb.append("?appid=").append(Utils.urlEncode(req.getApplicationIdx()));
 
 		return new URL(sb.toString());
 	}

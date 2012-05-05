@@ -46,7 +46,6 @@ public class Main {
 	private static File out = null;
 
 	public static void main(String[] args) throws IOException {
-		System.in.read();
 		if (args.length == 0) {
 			printHelp();
 			System.exit(0);
@@ -200,7 +199,7 @@ public class Main {
 		try {
 			if (in.getName().toLowerCase().endsWith(".jar") && !plain) {
 				readBuffer = Utils.ensureSize((int) in.length(), readBuffer);
-				writeBuffer = Utils.ensureSize((int) (in.length() * 2), writeBuffer);
+				writeBuffer = Utils.ensureSize((int) (in.length() * 3), writeBuffer);
 
 				int readFromFile = Utils.readFully(in, readBuffer);
 				ByteArrayInputStream byteIn = new ByteArrayInputStream(readBuffer, 0, readFromFile);
@@ -246,13 +245,13 @@ public class Main {
 					throw new IOException("Failed to rename tmp file to " + in.getAbsolutePath());
 				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			if (out != null) {
 				out.delete();
 			}
 
-			System.err.format("Error processing file '%s': %s", in.getAbsolutePath(), e.getMessage());
-			System.exit(7);
+			System.err.format("Error processing file '%s': %s\n", in.getAbsolutePath(), e.getMessage());
+			// System.exit(7);
 		}
 
 		time = (System.nanoTime() - time) / 1000000;

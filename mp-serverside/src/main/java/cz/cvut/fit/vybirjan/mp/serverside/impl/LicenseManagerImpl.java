@@ -49,7 +49,6 @@ public class LicenseManagerImpl implements LicenseManager {
 
 			return response;
 		} catch (RuntimeException e) {
-			e.printStackTrace();
 			return LicenseResponse.internalError();
 		}
 	}
@@ -89,16 +88,9 @@ public class LicenseManagerImpl implements LicenseManager {
 	private LicenseResponse handleActivateLicense(LicenseRequest request) {
 		License license = dataSource.findByNumber(request.getLicenseNumber());
 
-		if (license == null) {
-			return LicenseResponse.licenseNotFound();
-		}
-
-		if (!license.isActive()) {
-			return LicenseResponse.inactive();
-		}
-
-		if (!Utils.isValid(license.getValidFrom(), license.getValidTo())) {
-			return LicenseResponse.expired();
+		LicenseResponse resp = basicCheck(license);
+		if (resp != null) {
+			return resp;
 		}
 
 		if (license.getMaxActivations() != null) {
@@ -121,6 +113,22 @@ public class LicenseManagerImpl implements LicenseManager {
 		}
 	}
 
+	private static LicenseResponse basicCheck(License license) {
+		if (license == null) {
+			return LicenseResponse.licenseNotFound();
+		}
+
+		if (!license.isActive()) {
+			return LicenseResponse.inactive();
+		}
+
+		if (!Utils.isValid(license.getValidFrom(), license.getValidTo())) {
+			return LicenseResponse.expired();
+		}
+
+		return null;
+	}
+
 	private LicenseResponse createNewActivation(License license, List<HardwareFingerprint> fingerprints) {
 		Activation activation = entityFactory.createActivation(fingerprints);
 
@@ -138,8 +146,9 @@ public class LicenseManagerImpl implements LicenseManager {
 		for (Feature f : features) {
 			if (Utils.isValid(f.getValidFrom(), f.getValidTo())) {
 				info.addFeature(new cz.cvut.fit.vybirjan.mp.common.comm.Feature(f.getCode(),
+						f.getDescription(),
 						Utils.max(f.getValidFrom(), l.getValidFrom()),
-						Utils.min(f.getValidFrom(), f.getValidTo())));
+						Utils.min(f.getValidTo(), l.getValidTo())));
 
 				if (f.getKey() != null) {
 					info.addKey(f.getKey());
@@ -155,7 +164,20 @@ public class LicenseManagerImpl implements LicenseManager {
 	}
 
 	private LicenseResponse handleGetExistingLicense(LicenseRequest request) {
-		return null;
+		License l = dataSource.findByNumber(request.getLicenseNumber());
+
+		LicenseResponse resp = basicCheck(l);
+		if (resp != null) {
+			return resp;
+		}
+
+		Activation activation = dataSource.findActiveActivationForLicense(l, request.getFingerprints());
+
+		if (activation == null) {
+			return LicenseResponse.notActivated();
+		}
+
+		return LicenseResponse.foundExisting(createResponseInfo(l, activation));
 	}
 
 	@Override

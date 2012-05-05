@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
@@ -413,6 +414,20 @@ public final class Utils {
 			return new byte[size];
 		} else {
 			return buffer;
+		}
+	}
+
+	/**
+	 * Helper method to urlencode strings
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public static String urlEncode(String str) {
+		try {
+			return URLEncoder.encode(str, UTF_8);
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError("UTF-8 not available");
 		}
 	}
 }

@@ -64,7 +64,8 @@ public class FeaturesController {
 			@FormParam("code") String code,
 			@FormParam("description") String description,
 			@FormParam("key") String key,
-			@FormParam("generate") String generate) throws UnsupportedEncodingException, URISyntaxException {
+			@FormParam("generate") String generate,
+			@FormParam("tag") int tag) throws UnsupportedEncodingException, URISyntaxException {
 
 		if (DTO.isNullOrEmpty(code) || DTO.isNullOrEmpty(description)) {
 			return Response.seeOther(createKeysUri("errorMessage", "Saving failed - all fields must be filled")).build();
@@ -77,7 +78,7 @@ public class FeaturesController {
 
 		TaggedKey taggedKey = null;
 		if (generate != null) {
-			taggedKey = FileEncryptor.generateDefaultKey(1);// TODO
+			taggedKey = FileEncryptor.generateDefaultKey(tag);
 		} else if (!DTO.isNullOrEmpty(key)) {
 			try {
 				taggedKey = FileEncryptor.deserializeKey(Utils.decode(key));

@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry excluding="**/FileEncryptor" kind="src" path="src-common"/>
+	<classpathentry kind="src" path="src-common"/>
 	<classpathentry kind="src" path="src-serverside"/>
-	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/mp-common"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/mp-serverside"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jersey-core-1.12.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jersey-server-1.12.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jersey-servlet-1.12.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/aopalliance-1.0.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-3.0.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-servlet-3.0.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/javax.inject-1.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/asm-3.1.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-api-1.5.8.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/slf4j-jdk14-1.5.8.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/jersey-guice-1.12.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jersey-core-1.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jersey-server-1.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jersey-servlet-1.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/aopalliance-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/guice-3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/guice-servlet-3.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/javax.inject-1.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/asm-3.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/slf4j-api-1.5.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/slf4j-jdk14-1.5.8.jar"/>
+	<classpathentry exported="true" kind="lib" path="war/WEB-INF/lib/jersey-guice-1.12.jar"/>
+	<classpathentry exported="true" kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

@@ -1,5 +1,7 @@
 package cz.cvut.fit.vybirjan.mp.web.model;
 
+import java.io.Serializable;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -11,7 +13,9 @@ import com.google.appengine.api.datastore.Key;
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 
 @PersistenceCapable
-public class EncryptionKeyJDO {
+public class EncryptionKeyJDO implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)

@@ -13,40 +13,35 @@ public class LinuxFingerprintProvider implements HardwareFingerprintProvider {
 
 	@Override
 	public void inititalize() {
-		
+
 	}
-	
+
 	private static void tryAddFromCommand(List<HardwareFingerprint> fps, String name, String... cmd) {
 		try {
 			String output = runCommand(cmd);
-			if(output != null && !output.isEmpty()) {
+			if (output != null && !output.isEmpty()) {
 				fps.add(new HardwareFingerprint(name, Utils.encode(Utils.hash(Utils.toUtf8(output)))));
 			}
-		} catch(Exception e) {
-			//ignore
+		} catch (Exception e) {
+			// ignore
 		}
 	}
 
 	@Override
 	public List<HardwareFingerprint> collectFingerprints() {
 		List<HardwareFingerprint> ret = new ArrayList<HardwareFingerprint>(5);
-		
+
 		tryAddFromCommand(ret, "L00", "hostid");
 		tryAddFromCommand(ret, "L01", "lspci");
-		
+
 		return ret;
 	}
 
 	@Override
 	public void destroy() {
-		
+
 	}
-	
-	public static void main(String[] args) throws IOException, InterruptedException {
-		LinuxFingerprintProvider p = new LinuxFingerprintProvider();
-		System.out.println(p.collectFingerprints());
-	}
-	
+
 	private static String runCommand(String... cmd) {
 		String output = null;
 		try {
@@ -57,14 +52,14 @@ public class LinuxFingerprintProvider implements HardwareFingerprintProvider {
 			try {
 				char[] buffer = new char[1024];
 				int read = 0;
-				while((read = reader.read(buffer)) != -1) {
+				while ((read = reader.read(buffer)) != -1) {
 					sb.append(buffer, 0, read);
 				}
 			} finally {
 				reader.close();
 			}
 			output = sb.toString();
-			
+
 			if (p.waitFor() != 0) {
 				// program exited with error
 				return null;

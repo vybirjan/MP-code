@@ -30,13 +30,15 @@ public class Feature implements Serializable {
 	 * @param validFrom
 	 * @param validTo
 	 */
-	public Feature(String code, Date validFrom, Date validTo) {
+	public Feature(String code, String description, Date validFrom, Date validTo) {
 		this.code = code;
 		this.validFrom = validFrom == null ? null : (Date) validFrom.clone();
 		this.validTo = validTo == null ? null : (Date) validTo.clone();
+		this.description = description;
 	}
 
 	private final String code;
+	private final String description;
 	private final Date validFrom;
 	private final Date validTo;
 
@@ -67,10 +69,21 @@ public class Feature implements Serializable {
 		return validTo == null ? null : (Date) validTo.clone();
 	}
 
+	/**
+	 * Returns license description
+	 * 
+	 * @return
+	 */
+	public String getDescription() {
+		return description;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Feature[").append(code);
+		sb.append(", descr=").append(description);
+
 		if (validFrom != null) {
 			sb.append(", validFrom=").append(validFrom.getTime());
 		}

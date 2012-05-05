@@ -1,6 +1,7 @@
 package cz.cvut.fit.vybirjan.mp.clientside;
 
 import java.io.IOException;
+import java.util.List;
 
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseCheckException.LicenseCheckErrorType;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.client.RESTServiceClient;
@@ -12,6 +13,7 @@ import cz.cvut.fit.vybirjan.mp.clientside.internal.hook.SecurityHook;
 import cz.cvut.fit.vybirjan.mp.clientside.internal.storage.EquinoxSecureStorage;
 import cz.cvut.fit.vybirjan.mp.common.Utils;
 import cz.cvut.fit.vybirjan.mp.common.comm.Feature;
+import cz.cvut.fit.vybirjan.mp.common.comm.HardwareFingerprint;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseInformation;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
 
@@ -238,6 +240,14 @@ public class LicenseService {
 		// no valid features
 		if (!validFeatures) {
 			throw new LicenseCheckException(LicenseCheckErrorType.EXPIRED);
+		}
+
+		List<HardwareFingerprint> fingerprints = fingerprintProvider.collectFingerprints();
+
+		for (HardwareFingerprint fp : license.getFingerPrints()) {
+			if (!fingerprints.contains(fp)) {
+				throw new LicenseCheckException(LicenseCheckErrorType.FINGERPRINT_MISMATCH);
+			}
 		}
 
 		return license;

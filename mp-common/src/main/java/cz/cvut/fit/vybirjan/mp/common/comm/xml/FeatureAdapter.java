@@ -15,11 +15,11 @@ public class FeatureAdapter extends XmlAdapter<MarshallableFeature, Feature> {
 
 	@Override
 	public Feature unmarshal(MarshallableFeature v) throws Exception {
-		return new Feature(v.code, v.validFrom, v.validTo);
+		return new Feature(v.code, v.description, v.validFrom, v.validTo);
 	}
 
 	@Override
 	public MarshallableFeature marshal(Feature v) throws Exception {
-		return new MarshallableFeature(v.getCode(), v.getValidFrom(), v.getValidTo());
+		return new MarshallableFeature(v.getCode(), v.getDescription(), v.getValidFrom(), v.getValidTo());
 	}
 }

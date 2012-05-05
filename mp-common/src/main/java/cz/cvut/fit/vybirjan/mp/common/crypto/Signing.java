@@ -51,7 +51,6 @@ public class Signing {
 			byte[] dataHash = Utils.hash(data);
 			return Arrays.equals(decrypted, dataHash);
 		} catch (GeneralSecurityException e) {
-			e.printStackTrace();
 			return false;
 		}
 	}
@@ -93,9 +92,4 @@ public class Signing {
 		}
 	}
 
-	public static void main(String[] args) {
-		KeyPair pair = generateKeyPair();
-		System.out.format("Public: %s\n", Utils.encode(Utils.serialize(pair.getPublic())));
-		System.out.format("Private: %s\n", Utils.encode(Utils.serialize(pair.getPrivate())));
-	}
 }

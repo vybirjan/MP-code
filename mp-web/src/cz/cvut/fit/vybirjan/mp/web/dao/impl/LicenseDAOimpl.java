@@ -1,6 +1,5 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.jdo.JDOObjectNotFoundException;
@@ -59,7 +58,8 @@ public class LicenseDAOimpl implements LicenseDAO {
 			Query q = pm.newQuery(LicenseJDO.class);
 			q.setOrdering("dateIssued asc");
 			List<LicenseJDO> result = (List<LicenseJDO>) q.execute();
-			return new ArrayList<LicenseJDO>(result);
+			result.size(); // fetch all data
+			return result;
 		} finally {
 			pm.close();
 		}

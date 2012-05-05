@@ -113,5 +113,4 @@ public class LicenseRequest implements Serializable {
 	public void setApplicationId(String applicationId) {
 		this.applicationId = applicationId;
 	}
-
 }
