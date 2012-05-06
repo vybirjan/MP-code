@@ -265,4 +265,20 @@ public final class LicenseInformation implements Serializable, Cloneable {
 
 		return clone;
 	}
+
+	/**
+	 * Returns feature with specified code
+	 * 
+	 * @param code
+	 *            Feature code
+	 * @return Feature or null if no such feature exists
+	 */
+	public Feature containsFeature(String code) {
+		for (Feature f : getFeatures()) {
+			if (f.getCode().equals(code)) {
+				return f;
+			}
+		}
+		return null;
+	}
 }

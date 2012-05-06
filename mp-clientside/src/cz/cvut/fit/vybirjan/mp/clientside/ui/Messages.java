@@ -8,7 +8,9 @@ public class Messages extends NLS {
 	public static String LicenseActivationDialog_Error_RetrieveFailed;
 	public static String LicenseActivationDialog_Error_VerificationFailed;
 	public static String LicenseActivationDialog_LicenseNumber;
+	public static String LicenseActivationDialog_MissingRequiredFeatures;
 	public static String LicenseActivationDialog_RetrieveingLicense;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

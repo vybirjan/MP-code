@@ -3,6 +3,7 @@ package cz.cvut.fit.vybirjan.mp.clientside.ui;
 import java.io.IOException;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -48,6 +49,9 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 	protected StackLayout stackLayout;
 
 	protected String shellTitle = ""; //$NON-NLS-1$
+	protected String message = ""; //$NON-NLS-1$
+	protected int messageType = IMessageProvider.NONE;
+	protected String title = "";
 
 	protected boolean releaseGetNameLoop = false;
 
@@ -56,6 +60,8 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		super.create();
 		getShell().addShellListener(SHELL_CLOSE_LISTENER);
 		getShell().setText(shellTitle);
+		super.setMessage(message, messageType);
+		super.setTitle(title);
 	}
 
 	@Override
@@ -112,6 +118,21 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 	protected void setTopControl(Control c) {
 		stackLayout.topControl = c;
 		c.getParent().layout();
+	}
+
+	@Override
+	public void setMessage(String newMessage) {
+		setMessage(newMessage, IMessageProvider.NONE);
+	}
+
+	@Override
+	public void setMessage(String newMessage, int newType) {
+		message = newMessage;
+		messageType = newType;
+
+		if (getShell() != null) {
+			super.setMessage(newMessage, newType);
+		}
 	}
 
 	@Override
@@ -295,6 +316,30 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		this.shellTitle = shellTitle;
 		if (getShell() != null && !getShell().isDisposed()) {
 			getShell().setText(shellTitle);
+		}
+	}
+
+	@Override
+	public void onMissingRequiredFeatures() {
+		if (!isUiThread()) {
+			Display.getDefault().asyncExec(new StartupRunnable() {
+
+				@Override
+				public void runWithException() throws Throwable {
+					onMissingRequiredFeatures();
+				}
+			});
+		} else {
+			createIfNeeded();
+			setErrorMessage(Messages.LicenseActivationDialog_MissingRequiredFeatures);
+		}
+	}
+
+	@Override
+	public void setTitle(String newTitle) {
+		title = newTitle;
+		if (getShell() != null) {
+			super.setTitle(newTitle);
 		}
 	}
 

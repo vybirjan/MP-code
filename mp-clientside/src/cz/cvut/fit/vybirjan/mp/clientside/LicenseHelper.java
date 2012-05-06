@@ -34,6 +34,9 @@ public class LicenseHelper {
 		public void onCheckException(LicenseCheckErrorType type) {
 		}
 
+		@Override
+		public void onMissingRequiredFeatures() {
+		}
 	}
 
 	/**
@@ -78,6 +81,11 @@ public class LicenseHelper {
 		 * Called when provider is no longer needed.
 		 */
 		void destroy();
+
+		/**
+		 * Called when some of required features are missing
+		 */
+		void onMissingRequiredFeatures();
 	}
 
 	/**
@@ -89,28 +97,59 @@ public class LicenseHelper {
 	 *         LicenseNumberProvider returned null on
 	 *         {@link LicenseNumberProvider#getLicenseNumber()} call.
 	 */
-	public static LicenseInformation getValidLicense(LicenseNumberProvider numberProvider) {
+	public static LicenseInformation getValidLicense(LicenseNumberProvider numberProvider, String... requiredFeatures) {
 		LicenseService service = LicenseService.getInstance();
 
 		try {
-			return service.checkOnline();
+			LicenseInformation info = service.checkOnline();
+			if (!containsRequiredFeatures(info, requiredFeatures)) {
+				service.clearCurrentLicense();
+				numberProvider.onMissingRequiredFeatures();
+				return loop(numberProvider, requiredFeatures);
+			} else {
+				return info;
+			}
 		} catch (LicenseRetrieveException e) {
 			numberProvider.onRetrieveException(e.getResponseType());
-			return loop(numberProvider);
+			return loop(numberProvider, requiredFeatures);
 		} catch (LicenseCheckException e) {
 			if (e.getErrorType() != LicenseCheckErrorType.NOT_FOUND) {
 				numberProvider.onCheckException(e.getErrorType());
 			}
-			return loop(numberProvider);
+			return loop(numberProvider, requiredFeatures);
 		} catch (IOException e) {
 			try {
-				return service.checkOffline();
+				LicenseInformation info = service.checkOffline();
+				if (!containsRequiredFeatures(info, requiredFeatures)) {
+					service.clearCurrentLicense();
+					numberProvider.onMissingRequiredFeatures();
+					return loop(numberProvider, requiredFeatures);
+				} else {
+					return info;
+				}
 			} catch (LicenseCheckException e1) {
 				numberProvider.onCheckException(e1.getErrorType());
-				return loop(numberProvider);
+				return loop(numberProvider, requiredFeatures);
 			}
 		} finally {
 			numberProvider.destroy();
+		}
+	}
+
+	private static boolean containsRequiredFeatures(LicenseInformation info, String[] features) {
+		if (features != null && features.length > 0) {
+			if (info == null) {
+				return false;
+			} else {
+				for (String code : features) {
+					if (info.containsFeature(code) == null) {
+						return false;
+					}
+				}
+				return true;
+			}
+		} else {
+			return info != null;
 		}
 	}
 
@@ -129,7 +168,7 @@ public class LicenseHelper {
 	 * @param e
 	 * @return
 	 */
-	public static LicenseInformation getValidLicenseFromUI(final LicenseNumberProvider p, Executor e) {
+	public static LicenseInformation getValidLicenseFromUI(final LicenseNumberProvider p, Executor e, final String... requiredFeatures) {
 		if (!isUiThread()) {
 			throw new SWTException(SWT.ERROR_THREAD_INVALID_ACCESS);
 		}
@@ -138,7 +177,7 @@ public class LicenseHelper {
 
 			@Override
 			protected LicenseInformation runWithResult() {
-				return getValidLicense(p);
+				return getValidLicense(p, requiredFeatures);
 			}
 		};
 
@@ -153,12 +192,18 @@ public class LicenseHelper {
 		return rwr.getResult();
 	}
 
-	private static LicenseInformation loop(LicenseNumberProvider provider) {
+	private static LicenseInformation loop(LicenseNumberProvider provider, String[] reqFeatures) {
 		String licenseNumber = null;
 		LicenseService service = LicenseService.getInstance();
 		while ((licenseNumber = provider.getLicenseNumber()) != null) {
 			try {
-				return service.activateLicense(licenseNumber);
+				LicenseInformation info = service.activateLicense(licenseNumber);
+				if (!containsRequiredFeatures(info, reqFeatures)) {
+					service.clearCurrentLicense();
+					provider.onMissingRequiredFeatures();
+				} else {
+					return info;
+				}
 			} catch (LicenseRetrieveException e) {
 				provider.onRetrieveException(e.getResponseType());
 			} catch (LicenseCheckException e) {

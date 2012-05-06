@@ -70,20 +70,18 @@ public class SecurityHook extends BaseClassLoadingHook implements HookConfigurat
 	@Override
 	public void addHooks(HookRegistry registry) {
 		registry.addClassLoadingHook(InstanceHolder.INSTANCE);
-		System.out.println("Hook up and running");
 	}
 
 	@Override
 	public byte[] processClass(String name, byte[] classbytes, ClasspathEntry classpathEntry, BundleEntry entry, ClasspathManager manager) {
 		if (classbytes[0] == FileEncryptor.HEAD) {
-			System.out.println("Decrypting class: " + name);
 			Integer tag = Integer.valueOf(Utils.toInt(classbytes, 1));
 			ProcessStrategy<Object> strategy = keys.get(tag);
 			if (strategy != null) {
 				byte[] ret = decrypt(classbytes, strategy);
 				return ret;
 			} else {
-				throw new IllegalStateException("No strategy available for tag " + tag);
+				throw new IllegalStateException("Cannot decrypt class " + name + " - no strategy available for tag " + tag);
 			}
 
 		} else {

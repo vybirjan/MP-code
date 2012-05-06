@@ -83,12 +83,13 @@ public class Win32FingerprintProvider implements HardwareFingerprintProvider {
 	}
 
 	@Override
-	public void inititalize() {
-		WindowsFingerprintProvider.initializeWmi();
+	public void destroy() {
+		WindowsFingerprintProvider.destroy();
 	}
 
 	@Override
-	public void destroy() {
-		WindowsFingerprintProvider.destroy();
+	public void inititalize() {
+		// TODO Auto-generated method stub
+
 	}
 }

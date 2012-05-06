@@ -1,5 +1,6 @@
 package cz.cvut.fit.vybirjan.mp.web.dao.impl.licensemanager;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,15 +33,15 @@ public class JDODatasourceImpl implements DataSource {
 	private final PersistenceManagerFactory pmf;
 
 	@Override
-	public List<? extends Feature> findFeaturesForLicense(License l) {
+	public List<Feature> findFeaturesForLicense(License l) {
 		LicenseJDO license = (LicenseJDO) l;
-		return license.getFeatures();
+		return new ArrayList<Feature>(license.getFeatures());
 	}
 
 	@Override
-	public List<? extends Activation> findActiveActivationsForLicense(License l) {
+	public List<Activation> findActiveActivationsForLicense(License l) {
 		LicenseJDO license = (LicenseJDO) l;
-		List<ActivationJDO> activations = new LinkedList<ActivationJDO>();
+		List<Activation> activations = new LinkedList<Activation>();
 
 		for (ActivationJDO activation : license.getActivations()) {
 			if (activation.isActive()) {

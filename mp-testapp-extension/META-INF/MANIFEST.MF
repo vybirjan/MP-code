@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Extension to Test App
+Bundle-SymbolicName: mp-testapp-extension;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Encryption-Exclude: cz.cvut.fit.vybirjan.mp.testapp.extension
+Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
+ mp-testapp;bundle-version="1.0.0",
+ cz.cvut.fit.vybirjan.mp.client;bundle-version="1.0.0"

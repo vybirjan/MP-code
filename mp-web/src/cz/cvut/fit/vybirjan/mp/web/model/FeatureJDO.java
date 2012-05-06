@@ -3,6 +3,7 @@ package cz.cvut.fit.vybirjan.mp.web.model;
 import java.io.Serializable;
 
 import javax.jdo.annotations.Extension;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -30,6 +31,7 @@ public class FeatureJDO implements Serializable {
 	}
 
 	@PrimaryKey
+	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 	@Persistent
 	private String code;

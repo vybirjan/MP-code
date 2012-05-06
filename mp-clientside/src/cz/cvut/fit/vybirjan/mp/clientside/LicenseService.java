@@ -1,6 +1,8 @@
 package cz.cvut.fit.vybirjan.mp.clientside;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseCheckException.LicenseCheckErrorType;
@@ -24,7 +26,24 @@ import cz.cvut.fit.vybirjan.mp.common.comm.LicenseResponse;
  * @author Jan Vybíral
  * 
  */
-public class LicenseService {
+public final class LicenseService {
+
+	/**
+	 * Listener notified when active license changes
+	 * 
+	 * @author Jan Vybíral
+	 * 
+	 */
+	public static interface LicenseChangedListener {
+		/**
+		 * Called when active license changes
+		 * 
+		 * @param newInfo
+		 *            New license information, or null
+		 */
+		void onLicenseChanged(LicenseInformation newInfo);
+
+	}
 
 	private static class InstanceHolder {
 
@@ -61,7 +80,7 @@ public class LicenseService {
 		}
 	}
 
-	public LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {
+	private LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {
 		this.storage = storage;
 		this.serviceClient = serviceClient;
 		this.fingerprintProvider = fingerprintProvider;
@@ -73,6 +92,7 @@ public class LicenseService {
 	private final SecureStorage storage;
 	private final LicenseServiceClient serviceClient;
 	private final HardwareFingerprintProvider fingerprintProvider;
+	private final List<LicenseChangedListener> licenseChangedListeners = new LinkedList<LicenseService.LicenseChangedListener>();
 
 	private LicenseInformation getCurrentInternal() {
 		LicenseInformation tmpLicense = null;
@@ -124,6 +144,8 @@ public class LicenseService {
 		if (info != null) {
 			SecurityHook.addKeys(currentLicense.getKeys());
 		}
+
+		notifyListeners(currentLicense);
 	}
 
 	/**
@@ -142,6 +164,8 @@ public class LicenseService {
 		}
 
 		SecurityHook.clearKeys();
+
+		notifyListeners(null);
 	}
 
 	/**
@@ -251,5 +275,42 @@ public class LicenseService {
 		}
 
 		return license;
+	}
+
+	/**
+	 * Adds new license listener
+	 * 
+	 * @param listener
+	 */
+	public void addLicenseChangedListener(LicenseChangedListener listener) {
+		synchronized (licenseChangedListeners) {
+			licenseChangedListeners.add(listener);
+		}
+	}
+
+	/**
+	 * Removes license listener
+	 * 
+	 * @param listener
+	 * @return
+	 */
+	public boolean removeLicenseChangedListener(LicenseChangedListener listener) {
+		synchronized (licenseChangedListeners) {
+			return licenseChangedListeners.remove(listener);
+		}
+	}
+
+	private void notifyListeners(LicenseInformation info) {
+		List<LicenseChangedListener> listeners = null;
+		synchronized (licenseChangedListeners) {
+			listeners = new ArrayList<LicenseService.LicenseChangedListener>(licenseChangedListeners);
+		}
+
+		for (LicenseChangedListener lisetner : listeners) {
+			try {
+				lisetner.onLicenseChanged((LicenseInformation) info.clone());
+			} catch (Exception ignore) {
+			}
+		}
 	}
 }

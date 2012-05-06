@@ -1,7 +1,5 @@
 package cz.cvut.fit.vybirjan.mp.clientside.internal.fingerprints.win32;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class WindowsFingerprintProvider {
 
 	private static final String SERIAL_NUMBER = "SerialNumber";
@@ -36,32 +34,37 @@ public class WindowsFingerprintProvider {
 
 	private native void disposeServiceHandles(Handles h);
 
-	private Handles handles = null;
+	private final ThreadLocal<Handles> handles = new ThreadLocal<Handles>();
 
-	private static AtomicBoolean initialized = new AtomicBoolean(false);
+	private static ThreadLocal<Boolean> initialized = new ThreadLocal<Boolean>() {
+		@Override
+		protected Boolean initialValue() {
+			return Boolean.FALSE;
+		}
+	};
 
 	public void createServices() throws ServiceInitializationException {
 		if (!initialized.get()) {
 			initialized.set(initialize());
 		}
 
-		if (handles == null) {
-			handles = createServiceHandles();
+		if (handles.get() == null) {
+			handles.set(createServiceHandles());
 		}
 	}
 
 	public void disposeServices() {
-		if (handles != null) {
-			disposeServiceHandles(handles);
-			handles = null;
+		if (handles.get() != null) {
+			disposeServiceHandles(handles.get());
+			handles.set(null);
 		}
 	}
 
 	private String queryWMI(String clazz, String property) throws PropertyReadException {
-		if (handles == null) {
+		if (handles.get() == null) {
 			throw new IllegalStateException("Services not created");
 		} else {
-			return queryWMIInternal(handles, clazz, property);
+			return queryWMIInternal(handles.get(), clazz, property);
 		}
 	}
 

@@ -39,7 +39,6 @@ public class ActivationJDO implements Activation, Serializable {
 		return active;
 	}
 
-	@Override
 	public Date getDateCreated() {
 		return dateCreated;
 	}

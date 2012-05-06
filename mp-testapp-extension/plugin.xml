@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="cz.cvut.fit.vybirjan.mp.ToolbarExtensions">
+         <command
+               commandId="cz.cvut.fit.vybirjan.mp.testapp.Command"
+               icon="icon/sample.gif"
+               label="Licensed Feature"
+               style="push"
+               tooltip="Licensed Feature">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="cz.cvut.fit.vybirjan.mp.testapp.extension.Command"
+            id="cz.cvut.fit.vybirjan.mp.testapp.Command"
+            name="Do test">
+      </command>
+   </extension>
+</plugin>

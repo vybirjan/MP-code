@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes autoGenerate="false">
+<!-- Used 877 times in query history -->
+    <datastore-index kind="ActivationJDO" ancestor="true">
+        <property name="activations_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="ActivationJDO" ancestor="true">
+        <property name="activations_INTEGER_IDX" direction="asc"/>
+        <property name="active" direction="asc"/>
+        <property name="serializedFingerprints" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="ActivationJDO" ancestor="true">
+        <property name="activations_INTEGER_IDX" direction="asc"/>
+        <property name="id" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="ActivationJDO" ancestor="true">
+        <property name="activations_INTEGER_IDX" direction="asc"/>
+        <property name="id" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 875 times in query history -->
+    <datastore-index kind="AssignedFeatureJDO" ancestor="true">
+        <property name="features_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+    
+</datastore-indexes>
