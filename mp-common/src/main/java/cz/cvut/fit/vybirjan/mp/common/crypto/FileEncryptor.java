@@ -625,6 +625,26 @@ public final class FileEncryptor {
 	}
 
 	/**
+	 * Method to deserialize tagged key from byte array previously serialized by
+	 * {@link #serializeKey(TaggedKey)} method.
+	 * 
+	 * @param key
+	 *            Key to serialize
+	 * @param maxlength
+	 *            maximal number of bytes to
+	 * @return
+	 */
+	public static TaggedKey deserializeKey(byte[] data, int maxlength) {
+		int tag = Utils.toInt(data, 0);
+		int algLen = Utils.toInt(data, 4);
+		String alg = Utils.fromUtf8(data, 8, algLen);
+		int dataOffset = 4 + 4 + algLen;
+		byte[] keyData = Arrays.copyOfRange(data, dataOffset, maxlength);
+
+		return new TaggedKeyImpl(tag, new SecretKeySpec(keyData, alg));
+	}
+
+	/**
 	 * Generates new key with given tag.
 	 * 
 	 * @param tag

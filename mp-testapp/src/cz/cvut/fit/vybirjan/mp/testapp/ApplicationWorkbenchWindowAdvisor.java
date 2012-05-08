@@ -1,4 +1,4 @@
-package cz.cvut.fit.vybirjan.mp.testapp.ui;
+package cz.cvut.fit.vybirjan.mp.testapp;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -11,6 +11,7 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseService;
 import cz.cvut.fit.vybirjan.mp.common.comm.LicenseInformation;
+import cz.cvut.fit.vybirjan.mp.testapp.ui.ApplicationActionBarAdvisor;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 

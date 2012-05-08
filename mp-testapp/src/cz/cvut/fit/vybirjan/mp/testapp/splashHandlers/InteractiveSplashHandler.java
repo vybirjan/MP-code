@@ -19,7 +19,6 @@ public class InteractiveSplashHandler extends AbstractSplashHandler {
 	@Override
 	public void init(Shell splash) {
 		super.init(splash);
-
 		LicenseActivationDialog dlg = new LicenseActivationDialog(splash);
 		dlg.setTitle("Provide license number");
 		dlg.setMessage("Please insert your license number");
