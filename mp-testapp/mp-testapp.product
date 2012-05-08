@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Test application" uid="Test App PRoduct" id="mp-testapp.product" application="mp-testapp.application" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="Test application" uid="Test App Product" id="mp-testapp.product" application="mp-testapp.application" version="1.0.0.qualifier" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
       <image path="product_lg.gif"/>
@@ -36,6 +36,7 @@
       <plugin id="com.ibm.icu"/>
       <plugin id="cz.cvut.fit.vybirjan.mp.client"/>
       <plugin id="mp-testapp"/>
+      <plugin id="mp-testapp-config" fragment="true"/>
       <plugin id="mp-testapp-extension"/>
       <plugin id="org.eclipse.core.commands"/>
       <plugin id="org.eclipse.core.contenttype"/>
