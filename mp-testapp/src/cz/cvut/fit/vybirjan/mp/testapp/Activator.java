@@ -1,6 +1,7 @@
 package cz.cvut.fit.vybirjan.mp.testapp;
 
 import java.security.Key;
+import java.util.Properties;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -14,6 +15,13 @@ import cz.cvut.fit.vybirjan.mp.common.Utils;
  * The activator class controls the plug-in life cycle
  */
 public class Activator extends AbstractUIPlugin {
+
+	private static final String CONFIG_FILE = "/config.properties";
+
+	private static final String CONFIG_APPID = "appid";
+	private static final String CONFIG_HOST = "host";
+	private static final String CONFIG_HTTPS = "https";
+	private static final String CONFIG_KEY = "key";
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "mp-testapp"; //$NON-NLS-1$
@@ -39,13 +47,13 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 
+		Properties props = new Properties();
+		props.load(Activator.class.getResourceAsStream(CONFIG_FILE));
+
 		LicenseService
-				.configure(new LicenseServiceConfig(
-						"mp-testapp",
-						Utils.deserialize(
-								Utils.decode("rO0ABXNyABRqYXZhLnNlY3VyaXR5LktleVJlcL35T7OImqVDAgAETAAJYWxnb3JpdGhtdAASTGphdmEvbGFuZy9TdHJpbmc7WwAHZW5jb2RlZHQAAltCTAAGZm9ybWF0cQB+AAFMAAR0eXBldAAbTGphdmEvc2VjdXJpdHkvS2V5UmVwJFR5cGU7eHB0AANSU0F1cgACW0Ks8xf4BghU4AIAAHhwAAAAojCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAh+sLzWpr4kubWnpwddOcynX7jQD5RkHGm8UrpIv0JF+zrWZCXY6qOp3SKPk0OU1hlwFyq3nVX4d50Y3iH0vJ4yTEEX0SQfbRDK4zsaEkQdb2aVPVnS71EpXOfi/dXD/R1zqL7Ix1yST9pZYIbDD1cWfdtIAQIlQ4JDOAc02lKx0CAwEAAXQABVguNTA5fnIAGWphdmEuc2VjdXJpdHkuS2V5UmVwJFR5cGUAAAAAAAAAABIAAHhyAA5qYXZhLmxhbmcuRW51bQAAAAAAAAAAEgAAeHB0AAZQVUJMSUM="),
-								Key.class),
-						"localhost:8888", false));
+				.configure(new LicenseServiceConfig(props.getProperty(CONFIG_APPID),
+						Utils.deserialize(Utils.decode(props.getProperty(CONFIG_KEY)), Key.class),
+						props.getProperty(CONFIG_HOST), Boolean.parseBoolean(props.getProperty(CONFIG_HTTPS))));
 	}
 
 	/*

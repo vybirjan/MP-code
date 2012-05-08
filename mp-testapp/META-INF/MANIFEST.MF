@@ -4,7 +4,8 @@ Bundle-Name: Test application
 Bundle-SymbolicName: mp-testapp; singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: cz.cvut.fit.vybirjan.mp.testapp.Activator
-Encryption-Exclude: cz.cvut.fit.vybirjan.mp.testapp,cz.cvut.fit.vybirjan.mp.testapp.splashHandlers
+Encryption-Exclude: cz.cvut.fit.vybirjan.mp.testapp,
+ cz.cvut.fit.vybirjan.mp.testapp.splashHandlers
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  cz.cvut.fit.vybirjan.mp.client;bundle-version="1.0.0",

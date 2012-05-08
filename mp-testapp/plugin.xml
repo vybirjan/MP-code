@@ -15,7 +15,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             name="RCP Perspective"
-            class="cz.cvut.fit.vybirjan.mp.testapp.ui.Perspective"
+            class="cz.cvut.fit.vybirjan.mp.testapp.Perspective"
             id="mp-testapp.perspective">
       </perspective>
    </extension>
@@ -103,6 +103,10 @@
             class="cz.cvut.fit.vybirjan.mp.testapp.splashHandlers.InteractiveSplashHandler"
             id="mptestapp.splashHandlers.interactive">
       </splashHandler>
+      <splashHandlerProductBinding
+            productId="mp-testapp.product"
+            splashId="mptestapp.splashHandlers.interactive">
+      </splashHandlerProductBinding>
    </extension>
 
 </plugin>

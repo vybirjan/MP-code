@@ -1,8 +1,11 @@
-package cz.cvut.fit.vybirjan.mp.testapp.ui;
+package cz.cvut.fit.vybirjan.mp.testapp;
 
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
+
+import cz.cvut.fit.vybirjan.mp.testapp.ui.NavigationView;
+import cz.cvut.fit.vybirjan.mp.testapp.ui.View;
 
 public class Perspective implements IPerspectiveFactory {
 

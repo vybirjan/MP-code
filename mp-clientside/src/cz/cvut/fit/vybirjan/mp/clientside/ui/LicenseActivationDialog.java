@@ -192,7 +192,6 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 			createIfNeeded();
 
 			setErrorMessage(Messages.LicenseActivationDialog_Error_ConnectionFailed + e.getMessage());
-			// TODO
 		}
 	}
 
@@ -208,8 +207,7 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 			});
 		} else {
 			createIfNeeded();
-			// TODO
-			setErrorMessage(Messages.LicenseActivationDialog_Error_RetrieveFailed + response);
+			setErrorMessage(Messages.LicenseActivationDialog_Error_RetrieveFailed + Messages.getMessageForResponseType(response));
 		}
 	}
 
@@ -226,8 +224,7 @@ public class LicenseActivationDialog extends TitleAreaDialog implements LicenseN
 		} else {
 			createIfNeeded();
 
-			setErrorMessage(Messages.LicenseActivationDialog_Error_VerificationFailed + type);
-			// TODO
+			setErrorMessage(Messages.LicenseActivationDialog_Error_VerificationFailed + Messages.getMessageForCheckError(type));
 		}
 	}
 

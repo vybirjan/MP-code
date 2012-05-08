@@ -5,7 +5,6 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 
 import cz.cvut.fit.vybirjan.mp.testapp.ui.ApplicationWorkbenchWindowAdvisor;
-import cz.cvut.fit.vybirjan.mp.testapp.ui.Perspective;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
