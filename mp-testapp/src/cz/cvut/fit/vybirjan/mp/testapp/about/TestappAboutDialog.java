@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
+import cz.cvut.fit.vybirjan.mp.clientside.LicenseCheckException;
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseHelper;
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseService;
 import cz.cvut.fit.vybirjan.mp.clientside.LicenseService.LicenseChangedListener;
@@ -54,7 +55,11 @@ public class TestappAboutDialog extends TitleAreaDialog implements LicenseChange
 		setTitle("Test App");
 		setMessage("License information");
 		getShell().setText("About");
-		setLicenseInfo(LicenseService.getInstance().getCurrent());
+		try {
+			setLicenseInfo(LicenseService.getInstance().getCurrent());
+		} catch (LicenseCheckException e) {
+			PlatformUI.getWorkbench().close();
+		}
 		LicenseService.getInstance().addLicenseChangedListener(this);
 		getShell().addDisposeListener(new DisposeListener() {
 
@@ -153,7 +158,11 @@ public class TestappAboutDialog extends TitleAreaDialog implements LicenseChange
 	protected void changeLicense() {
 		LicenseService service = LicenseService.getInstance();
 
-		LicenseInformation currentInfo = service.getCurrent();
+		LicenseInformation currentInfo = null;
+		try {
+			currentInfo = service.getCurrent();
+		} catch (LicenseCheckException e1) {
+		}
 
 		String oldNumber = null;
 

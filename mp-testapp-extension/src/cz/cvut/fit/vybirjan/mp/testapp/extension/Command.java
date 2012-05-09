@@ -27,7 +27,7 @@ public class Command implements IHandler {
 
 	@Override
 	public boolean isEnabled() {
-		LicenseInformation info = LicenseService.getInstance().getCurrent();
+		LicenseInformation info = LicenseService.getInstance().getCurrentSafe();
 		return info != null && info.containsFeature("EXTENDED-FEATURE") != null;
 	}
 

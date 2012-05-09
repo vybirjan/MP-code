@@ -34,7 +34,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	@Override
 	public void postWindowCreate() {
-		LicenseInformation info = LicenseService.getInstance().getCurrent();
+		LicenseInformation info = LicenseService.getInstance().getCurrentSafe();
 
 		if (info == null || info.containsFeature("TEST-APP") == null) {
 			MessageBox box = new MessageBox(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), SWT.ICON_ERROR);

@@ -80,7 +80,7 @@ public final class LicenseService {
 		}
 	}
 
-	private LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {
+	LicenseService(SecureStorage storage, LicenseServiceClient serviceClient, HardwareFingerprintProvider fingerprintProvider) {
 		this.storage = storage;
 		this.serviceClient = serviceClient;
 		this.fingerprintProvider = fingerprintProvider;
@@ -94,7 +94,7 @@ public final class LicenseService {
 	private final HardwareFingerprintProvider fingerprintProvider;
 	private final List<LicenseChangedListener> licenseChangedListeners = new LinkedList<LicenseService.LicenseChangedListener>();
 
-	private LicenseInformation getCurrentInternal() {
+	private LicenseInformation getCurrentInternal() throws LicenseCheckException {
 		LicenseInformation tmpLicense = null;
 		synchronized (licenseLock) {
 			tmpLicense = currentLicense;
@@ -103,6 +103,9 @@ public final class LicenseService {
 		if (tmpLicense == null) {
 			try {
 				tmpLicense = storage.loadInfo();
+				if (tmpLicense != null) {
+					checkLicense(tmpLicense);
+				}
 			} catch (IOException e) {
 				// log
 			}
@@ -122,11 +125,31 @@ public final class LicenseService {
 	 * Returns current license information, or null if no license information is
 	 * available
 	 * 
+	 * @throws LicenseCheckException
+	 *             if license is loaded from persistent store and is invalid
 	 * @return
 	 */
-	public LicenseInformation getCurrent() {
-		LicenseInformation info = getCurrentInternal();
-		return info == null ? null : (LicenseInformation) info.clone();
+	public LicenseInformation getCurrent() throws LicenseCheckException {
+		try {
+			LicenseInformation info = getCurrentInternal();
+			return info == null ? null : (LicenseInformation) info.clone();
+		} catch (LicenseCheckException e) {
+			clearCurrentLicense();
+			throw e;
+		}
+	}
+
+	/**
+	 * Returns current instane or null if no license information is available
+	 * 
+	 * @return
+	 */
+	public LicenseInformation getCurrentSafe() {
+		try {
+			return getCurrent();
+		} catch (LicenseCheckException e) {
+			return null;
+		}
 	}
 
 	private void setCurrentLicense(LicenseInformation info) {
@@ -249,6 +272,10 @@ public final class LicenseService {
 	}
 
 	private LicenseInformation checkLicense(LicenseInformation license) throws LicenseCheckException {
+		if (license == null) {
+			throw new LicenseCheckException(LicenseCheckErrorType.NOT_FOUND);
+		}
+
 		if (!license.isSigned() || !license.verify(config.getEncryptionKey())) {
 			throw new LicenseCheckException(LicenseCheckErrorType.INVALID);
 		}
